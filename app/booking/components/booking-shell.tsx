@@ -1,8 +1,10 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { QRCodeCanvas } from "qrcode.react";
+import { SiteHeader } from "@/app/components/site-header";
 
 type SlotStatus = "available" | "booked" | "selected" | "blocked" | "pending";
 
@@ -113,6 +115,36 @@ export function BookingShell() {
   const [playerEmail, setPlayerEmail] = useState("");
   const [playerPhone, setPlayerPhone] = useState("");
   const [showReviewModal, setShowReviewModal] = useState(false);
+  const [paymentStep, setPaymentStep] = useState<{ bookingId: string } | null>(null);
+  const [paymentDetails, setPaymentDetails] = useState<{
+    courts: Array<{ name: string; startHour: number; endHour: number; subtotal: number; hours: number[] }>;
+    duration: number;
+    subtotal: number;
+    serviceFee: number;
+    total: number;
+    dateLabel: string;
+  } | null>(null);
+  const [paymentTimer, setPaymentTimer] = useState(15 * 60);
+  const [paymentReceipt, setPaymentReceipt] = useState<File | null>(null);
+  const [paymentPreview, setPaymentPreview] = useState<string | null>(null);
+  const [paymentUploading, setPaymentUploading] = useState(false);
+  const paymentStartRef = useRef<number>(0);
+
+  useEffect(() => {
+    if (!paymentStep) return;
+    paymentStartRef.current = Date.now();
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setPaymentTimer(15 * 60);
+    const interval = setInterval(() => {
+      const elapsed = Math.floor((Date.now() - paymentStartRef.current) / 1000);
+      const remaining = Math.max(0, 15 * 60 - elapsed);
+      setPaymentTimer(remaining);
+      if (remaining <= 0) {
+        clearInterval(interval);
+      }
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [paymentStep]);
 
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -337,10 +369,14 @@ export function BookingShell() {
     setSelectedSlots((prev) => [...prev, { courtId, hours: [hour] }]);
   };
 
-  const bookingAction = async () => {
+  const bookingAction = async (): Promise<string[]> => {
+    const bookingIds: string[] = [];
+
     if (selectedSlots.length === 0) {
-      return;
+      return bookingIds;
     }
+
+    const currentSummary = summary;
 
     for (const slot of selectedSlots) {
       const ordered = [...slot.hours].sort((a, b) => a - b);
@@ -363,69 +399,34 @@ export function BookingShell() {
         }),
       });
 
-      const payload = (await response.json()) as { message?: string };
+      const payload = (await response.json()) as { data?: { id: string }; message?: string };
       if (!response.ok) {
         setErrorMessage(payload.message || `Failed to create booking for Court ${slot.courtId}.`);
-        return;
+        return [];
+      }
+
+      if (payload.data?.id) {
+        bookingIds.push(payload.data.id);
       }
     }
 
     setErrorMessage(null);
+    setPaymentDetails({
+      courts: currentSummary.courts,
+      duration: currentSummary.duration,
+      subtotal: currentSummary.subtotal,
+      serviceFee: currentSummary.serviceFee,
+      total: currentSummary.total,
+      dateLabel: selectedDateLabel,
+    });
     clearSelection();
     await fetchAvailability();
+    return bookingIds;
   };
 
   return (
     <div className="min-h-screen">
-      <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/80 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
-          <div className="flex items-center gap-4">
-            <button
-              type="button"
-              onClick={() => {
-                if (typeof window !== "undefined" && window.history.length > 1) {
-                  window.history.back();
-                } else {
-                  window.location.href = "/";
-                }
-              }}
-              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="h-4 w-4"
-                aria-hidden="true"
-              >
-                <path d="M19 12H5" />
-                <path d="M12 19 l-7-7 7-7" />
-              </svg>
-              Back
-            </button>
-            <div className="hidden h-6 w-px bg-slate-200 sm:block" />
-            <span className="text-sm font-semibold text-slate-900">{clubDetails.name}</span>
-          </div>
-          <nav className="flex items-center gap-2">
-            <Link
-              href="/"
-              className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
-            >
-              Home
-            </Link>
-            <Link
-              href="/booking"
-              className="rounded-xl bg-blue-600 px-3 py-1.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-500"
-            >
-              Book a Court
-            </Link>
-          </nav>
-        </div>
-      </header>
+      
 
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
         <div className="grid gap-6 xl:grid-cols-[0.7fr_1.3fr]">
@@ -502,16 +503,6 @@ export function BookingShell() {
                 </span>
               ))}
             </div>
-          </article>
-
-          <article className="glass card-shadow rounded-3xl border border-blue-100 p-6">
-            <h2 className="font-display text-xl font-semibold text-slate-900">My Upcoming Bookings</h2>
-            <p className="mt-3 text-sm text-slate-700">No upcoming confirmed reservations.</p>
-          </article>
-
-          <article className="glass card-shadow rounded-3xl border border-blue-100 p-6">
-            <h2 className="font-display text-xl font-semibold text-slate-900">Booking History</h2>
-            <p className="mt-3 text-sm text-slate-700">Your completed sessions will appear here.</p>
           </article>
         </motion.section>
 
@@ -902,12 +893,247 @@ export function BookingShell() {
                   type="button"
                   onClick={async () => {
                     setShowReviewModal(false);
-                    await bookingAction();
+                    const ids = await bookingAction();
+                    if (ids.length > 0) {
+                      setPaymentStep({ bookingId: ids[0] });
+                    }
                   }}
                   className="rounded-xl bg-lime-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-lime-600"
                 >
-                  Confirm & Pay
+                  Proceed to Payment
                 </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {paymentStep && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/65 p-4">
+          <div className="max-h-[90vh] w-full max-w-3xl overflow-auto rounded-3xl bg-white">
+            <header className="rounded-t-3xl bg-slate-950 px-6 py-5 text-white sm:px-8">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="inline-flex rounded-full bg-lime-300 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-slate-900">
+                    Payment Required
+                  </p>
+                  <h2 className="mt-3 font-display text-3xl font-semibold">Complete Your Reservation</h2>
+                  <p className="mt-2 text-sm text-slate-300">
+                    Upload your GCash payment receipt to confirm your booking.
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs text-slate-400">Time remaining</p>
+                  <p className="font-display text-2xl font-semibold text-lime-300">
+                    {Math.floor(paymentTimer / 60)}:{(paymentTimer % 60).toString().padStart(2, "0")}
+                  </p>
+                </div>
+              </div>
+            </header>
+
+            <div className="grid gap-4 p-4 sm:p-6 md:grid-cols-2">
+              <div className="space-y-4">
+                <article className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                  <h3 className="font-display text-lg font-semibold text-slate-900">Reservation Summary</h3>
+                  <div className="mt-3 space-y-2 text-sm text-slate-700">
+                    {paymentDetails?.courts.map((court, index) => (
+                      <div key={index} className="flex justify-between gap-3 border-b border-slate-100 pb-2">
+                        <span className="font-medium">{court.name}</span>
+                        <span>{formatHour(court.startHour)} - {formatHour(court.endHour)}</span>
+                      </div>
+                    ))}
+                    <div className="flex justify-between gap-3 border-b border-slate-200 pt-2">
+                      <span className="text-slate-500">Date</span>
+                      <span className="font-medium">{paymentDetails?.dateLabel}</span>
+                    </div>
+                    <div className="flex justify-between gap-3 border-b border-slate-200 pt-2">
+                      <span className="text-slate-500">Duration</span>
+                      <span className="font-medium">{paymentDetails?.duration} hour(s)</span>
+                    </div>
+                    <div className="flex justify-between gap-3">
+                      <span className="text-slate-500">Subtotal</span>
+                      <span className="font-medium">P{paymentDetails?.subtotal}</span>
+                    </div>
+                    <div className="flex justify-between gap-3">
+                      <span className="text-slate-500">System Usage Fee</span>
+                      <span className="font-medium">P{paymentDetails?.serviceFee}</span>
+                    </div>
+                    <div className="flex justify-between gap-3 text-base font-semibold text-slate-900">
+                      <span>Total to Pay</span>
+                      <span>P{paymentDetails?.total}</span>
+                    </div>
+                  </div>
+                </article>
+
+                <article className="rounded-2xl border border-blue-200 bg-blue-50 p-4">
+                  <h3 className="font-semibold text-blue-800">GCash Payment Instructions</h3>
+                  <div className="mt-3 space-y-3 text-sm text-slate-700">
+                    <div className="rounded-xl bg-white p-3">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Amount</p>
+                      <p className="mt-1 font-display text-xl font-bold text-blue-700">P{paymentDetails?.total}</p>
+                    </div>
+                    <div className="rounded-xl bg-white p-3">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">GCash Number</p>
+                      <p className="mt-1 font-mono text-lg font-bold text-slate-900">0917-123-4567</p>
+                    </div>
+                    <div className="rounded-xl bg-white p-3">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Account Name</p>
+                      <p className="mt-1 font-medium text-slate-900">Hideout Pickleball Club</p>
+                    </div>
+                    <div className="rounded-xl bg-white p-3">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Step-by-Step Guide</p>
+                      <ol className="mt-2 list-inside list-decimal space-y-1">
+                        <li>Open your GCash app.</li>
+                        <li>Tap Send Money and enter 0917-123-4567.</li>
+                        <li>Enter the exact amount: P{paymentDetails?.total}.</li>
+                        <li>Add a note: Booking - {playerName}.</li>
+                        <li>Confirm and complete the payment.</li>
+                        <li>Take a screenshot of the success screen.</li>
+                        <li>Upload the screenshot below.</li>
+                      </ol>
+                    </div>
+                  </div>
+                </article>
+              </div>
+
+              <div className="space-y-4">
+                <article className="rounded-2xl border border-slate-200 bg-white p-4 text-center">
+                  <h3 className="font-display text-lg font-semibold text-slate-900">Scan QR Code</h3>
+                  <p className="mt-1 text-xs text-slate-500">Or use the QR code to pay instantly.</p>
+                  <div className="mt-4 flex justify-center">
+                    <QRCodeCanvas
+                      value={`GCASH:09171234567:${paymentDetails?.total}:Booking-${playerName}`}
+                      size={180}
+                      bgColor="#ffffff"
+                      fgColor="#1e40af"
+                      level="M"
+                    />
+                  </div>
+                </article>
+
+                <article className="rounded-2xl border border-slate-200 bg-white p-4">
+                  <h3 className="font-display text-lg font-semibold text-slate-900">Upload Receipt</h3>
+                  <p className="mt-1 text-xs text-slate-500">
+                    Accepted formats: JPEG, PNG, WebP (max 5MB).
+                  </p>
+                  <div className="mt-3">
+                    <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 p-6 transition hover:border-blue-400 hover:bg-blue-50">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="h-8 w-8 text-slate-400"
+                      >
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                        <polyline points="17 8 12 3 7 8" />
+                        <line x1="12" y1="3" x2="12" y2="15" />
+                      </svg>
+                      <span className="text-sm font-medium text-slate-700">
+                        {paymentReceipt ? paymentReceipt.name : "Click to upload screenshot"}
+                      </span>
+                      <input
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp"
+                        className="hidden"
+                        onChange={(event) => {
+                          const file = event.target.files?.[0];
+                          if (!file) return;
+                          if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+                            setErrorMessage("Invalid file type. Only JPEG, PNG, and WebP are allowed.");
+                            return;
+                          }
+                          if (file.size > 5 * 1024 * 1024) {
+                            setErrorMessage("File size exceeds 5MB.");
+                            return;
+                          }
+                          setPaymentReceipt(file);
+                          setPaymentPreview(URL.createObjectURL(file));
+                          setErrorMessage(null);
+                        }}
+                      />
+                    </label>
+                    {paymentPreview && (
+                      <div className="mt-3">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={paymentPreview}
+                        alt="Receipt preview"
+                        className="w-full rounded-xl border border-slate-200 object-contain"
+                      />
+                      </div>
+                    )}
+                  </div>
+                </article>
+
+                <div className="flex flex-col gap-2">
+                  <button
+                    type="button"
+                    disabled={!paymentReceipt || paymentUploading}
+                    onClick={async () => {
+                      if (!paymentReceipt || !paymentStep) return;
+                      setPaymentUploading(true);
+                      setErrorMessage(null);
+
+                      try {
+                        const formData = new FormData();
+                        formData.set("file", paymentReceipt);
+
+                        const uploadResponse = await fetch("/api/upload/receipt", {
+                          method: "POST",
+                          body: formData,
+                        });
+
+                        const uploadPayload = (await uploadResponse.json()) as { url?: string; message?: string };
+                        if (!uploadResponse.ok) {
+                          throw new Error(uploadPayload.message || "Failed to upload receipt.");
+                        }
+
+                        const patchResponse = await fetch("/api/bookings", {
+                          method: "PATCH",
+                          headers: {
+                            "Content-Type": "application/json",
+                          },
+                          body: JSON.stringify({
+                            id: paymentStep.bookingId,
+                            status: "booked",
+                            payment_receipt_url: uploadPayload.url,
+                          }),
+                        });
+
+                        const patchPayload = (await patchResponse.json()) as { message?: string };
+                        if (!patchResponse.ok) {
+                          throw new Error(patchPayload.message || "Failed to confirm booking.");
+                        }
+
+                        setPaymentStep(null);
+                        setPaymentReceipt(null);
+                        setPaymentPreview(null);
+                        await fetchAvailability();
+                      } catch (error) {
+                        setErrorMessage(error instanceof Error ? error.message : "Something went wrong.");
+                      } finally {
+                        setPaymentUploading(false);
+                      }
+                    }}
+                    className="w-full rounded-xl bg-lime-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-lime-600 disabled:cursor-not-allowed disabled:bg-slate-300"
+                  >
+                    {paymentUploading ? "Uploading..." : "Upload Receipt & Confirm"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPaymentStep(null);
+                      setPaymentReceipt(null);
+                      setPaymentPreview(null);
+                    }}
+                    className="w-full rounded-xl border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                  >
+                    Cancel
+                  </button>
+                </div>
               </div>
             </div>
           </div>

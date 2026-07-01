@@ -1,5 +1,6 @@
-// @ts-nocheck
+
 import Link from "next/link";
+import { SiteHeader } from "@/app/components/site-header";
 import { FadeIn, Stagger } from "@/components/shared/motion";
 
 const whyChooseUs = [
@@ -14,24 +15,6 @@ const whyChooseUs = [
   {
     title: "Community-first environment",
     description: "Built for social rallies, coaching sessions, and competitive players alike.",
-  },
-];
-
-const testimonials = [
-  {
-    quote: "The smoothest booking flow in Davao. I can reserve a slot in less than a minute.",
-    name: "Ari Santos",
-    role: "Club Member",
-  },
-  {
-    quote: "Premium feel from check-in to court time. The indoor setup is perfect for evening games.",
-    name: "Mika Cruz",
-    role: "League Player",
-  },
-  {
-    quote: "Super clear schedule and pricing. No confusion, no overbooking, just easy play.",
-    name: "Ken Ramos",
-    role: "Weekend Regular",
   },
 ];
 
@@ -66,27 +49,17 @@ const faqs = [
 export default function HomePage() {
   return (
     <>
-      <header className="sticky top-0 z-30 border-b border-slate-200/70 bg-white/80 backdrop-blur-xl">
-        <nav className="section-shell flex h-16 items-center justify-between">
-          <Link href="/" className="font-display text-lg font-semibold text-slate-900">
+      <SiteHeader
+        brandLabel={
+          <>
             <span className="rounded-lg bg-blue-600 px-2 py-1 text-white">H</span> Hideout Pickleball
-          </Link>
-          <div className="flex items-center gap-2 sm:gap-3">
-            <Link
-              href="/booking"
-              className="rounded-full border border-blue-200 bg-white px-4 py-2 text-sm font-medium text-blue-700 transition hover:bg-blue-50"
-            >
-              View Schedule
-            </Link>
-            <Link
-              href="/booking"
-              className="rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-blue-300/40 transition hover:bg-blue-500"
-            >
-              Book a Court
-            </Link>
-          </div>
-        </nav>
-      </header>
+          </>
+        }
+        navItems={[
+          { href: "/booking", label: "View Schedule" },
+          { href: "/booking", label: "Book a Court", primary: true },
+        ]}
+      />
 
       <main className="flex-1">
         <section className="section-shell py-12 sm:py-16">
@@ -99,10 +72,10 @@ export default function HomePage() {
                   Your Home for Pickleball.
                 </p>
                 <h1 className="font-display text-4xl font-semibold leading-tight sm:text-5xl lg:text-6xl">
-                  Indoor pickleball booking reimagined for speed and clarity.
+                  Outdoor pickleball booking reimagined for speed and clarity.
                 </h1>
                 <p className="mt-6 max-w-2xl text-sm text-blue-100/90 sm:text-base">
-                  Reserve one of two indoor courts, manage your sessions, and track bookings from a premium platform built for modern clubs.
+                  Reserve one of two outdoor courts.
                 </p>
                 <div className="mt-8 flex flex-wrap gap-3">
                   <Link
@@ -118,19 +91,6 @@ export default function HomePage() {
                     View Schedule
                   </Link>
                 </div>
-                </div>
-                <div className="glass rounded-2xl p-5 text-slate-800">
-                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Live Snapshot</p>
-                  <div className="mt-4 space-y-3">
-                    <div className="rounded-xl bg-white p-4">
-                      <p className="font-medium">Court 1</p>
-                      <p className="text-sm text-slate-600">Most popular from 6 PM to 9 PM</p>
-                    </div>
-                    <div className="rounded-xl bg-white p-4">
-                      <p className="font-medium">Court 2</p>
-                      <p className="text-sm text-slate-600">Best for lessons and warm-up sessions</p>
-                    </div>
-                  </div>
                 </div>
               </div>
             </div>
@@ -157,20 +117,6 @@ export default function HomePage() {
                 <p className="text-xs font-semibold uppercase tracking-[0.12em] text-blue-600">{item.label}</p>
                 <h3 className="mt-3 font-display text-3xl font-semibold text-slate-900">{item.price}</h3>
                 <p className="mt-1 text-sm text-slate-600">{item.range}</p>
-              </article>
-            ))}
-          </div>
-        </section>
-
-        <section className="section-shell pb-16" id="testimonials">
-          <div className="grid gap-4 md:grid-cols-3">
-            {testimonials.map((item) => (
-              <article key={item.name} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-                <p className="text-sm leading-relaxed text-slate-700">
-                  &ldquo;{item.quote}&rdquo;
-                </p>
-                <p className="mt-5 font-medium text-slate-900">{item.name}</p>
-                <p className="text-xs text-slate-500">{item.role}</p>
               </article>
             ))}
           </div>

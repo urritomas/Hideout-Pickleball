@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
   const courtsQuery = supabase.from("courts").select("id,name,is_active").eq("is_active", true).order("id");
   const bookingsQuery = supabase
     .from("bookings")
-    .select("id,court_id,start_at,end_at,status,player_name,total_price")
+    .select("id,court_id,start_at,end_at,status,player_name,total_price,player_email,player_phone")
     .in("status", ["pending", "confirmed", "cancelled"])
     .order("start_at");
   const blockedQuery = supabase.from("blocked_schedules").select("id,court_id,start_at,end_at,reason").order("start_at");
@@ -167,4 +167,42 @@ export async function POST(request: Request) {
   }
 
   return NextResponse.json({ data: insertResult.data }, { status: 201 });
+}
+
+export async function PATCH(request: Request) {
+  const payload = (await request.json()) as { id?: string; status?: string; payment_receipt_url?: string };
+
+  if (!payload.id) {
+    return NextResponse.json({ message: "Booking ID is required." }, { status: 400 });
+  }
+
+  const cookieStore = await cookies();
+  const supabase = createClient(cookieStore);
+
+  const updateData: Record<string, string | null> = {};
+  if (payload.status) {
+    updateData.status = payload.status;
+  }
+  if (payload.payment_receipt_url !== undefined) {
+    updateData.payment_receipt_url = payload.payment_receipt_url;
+  }
+
+  const { data, error } = await supabase
+    .from("bookings")
+    .update(updateData)
+    .eq("id", payload.id)
+    .select("id,court_id,start_at,end_at,status,total_price,player_name,player_email,payment_receipt_url")
+    .single();
+
+  if (error) {
+    return NextResponse.json(
+      {
+        message: "Failed to update booking.",
+        details: error.message,
+      },
+      { status: 500 },
+    );
+  }
+
+  return NextResponse.json({ data });
 }

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { SiteHeader } from "@/app/components/site-header";
 
 export const metadata: Metadata = {
   title: "Profile",
@@ -6,7 +7,19 @@ export const metadata: Metadata = {
 
 export default function ProfilePage() {
   return (
-    <main className="section-shell py-10 sm:py-14">
+    <>
+      <SiteHeader
+        brandLabel={
+          <>
+            <span className="rounded-lg bg-blue-600 px-2 py-1 text-white">H</span> Hideout Pickleball
+          </>
+        }
+        navItems={[
+          { href: "/booking", label: "View Schedule" },
+          { href: "/booking", label: "Book a Court", primary: true },
+        ]}
+      />
+      <main className="section-shell py-10 sm:py-14">
       <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
         <h1 className="font-display text-3xl font-semibold text-slate-900">Profile</h1>
         <p className="mt-1 text-sm text-slate-600">Update your details and review booking history.</p>
@@ -34,5 +47,6 @@ export default function ProfilePage() {
         </div>
       </section>
     </main>
+    </>
   );
 }

@@ -19,7 +19,9 @@ begin
     where t.typname = 'booking_status'
       and n.nspname = 'public'
   ) then
-    create type public.booking_status as enum ('pending', 'confirmed', 'cancelled');
+    create type public.booking_status as enum ('pending', 'booked', 'confirmed', 'cancelled');
+  else
+    alter type public.booking_status add value if not exists 'booked';
   end if;
 end
 $$;
@@ -34,6 +36,7 @@ create table if not exists public.bookings (
   end_at timestamptz not null,
   total_price numeric(10,2) not null,
   status public.booking_status not null default 'pending',
+  payment_receipt_url text,
   notes text,
   created_at timestamptz not null default now(),
   constraint bookings_valid_time check (start_at < end_at)
@@ -76,7 +79,9 @@ alter table public.payments enable row level security;
 grant usage on schema public to anon, authenticated;
 grant select on public.courts to anon, authenticated;
 grant select, insert on public.bookings to anon, authenticated;
+grant update on public.bookings to anon, authenticated;
 grant select on public.blocked_schedules to anon, authenticated;
+grant select, insert on public.payments to anon, authenticated;
 
 do $$
 begin
@@ -99,9 +104,48 @@ begin
   end if;
 
   if not exists (
+    select 1 from pg_policies where schemaname = 'public' and tablename = 'bookings' and policyname = 'public update bookings'
+  ) then
+    create policy "public update bookings" on public.bookings for update using (true);
+  end if;
+
+  if not exists (
     select 1 from pg_policies where schemaname = 'public' and tablename = 'blocked_schedules' and policyname = 'public read blocked'
   ) then
     create policy "public read blocked" on public.blocked_schedules for select using (true);
+  end if;
+
+  if not exists (
+    select 1 from pg_policies where schemaname = 'public' and tablename = 'payments' and policyname = 'public read payments'
+  ) then
+    create policy "public read payments" on public.payments for select using (true);
+  end if;
+
+  if not exists (
+    select 1 from pg_policies where schemaname = 'public' and tablename = 'payments' and policyname = 'public insert payments'
+  ) then
+    create policy "public insert payments" on public.payments for insert with check (true);
+  end if;
+end
+$$;
+
+-- Storage bucket for payment receipts
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('receipts', 'receipts', true, 5242880, array['image/jpeg', 'image/png', 'image/webp'])
+on conflict (id) do nothing;
+
+do $$
+begin
+  if not exists (
+    select 1 from pg_policies where schemaname = 'storage' and tablename = 'objects' and policyname = 'Public uploads allowed'
+  ) then
+    create policy "Public uploads allowed" on storage.objects for insert to public with check (bucket_id = 'receipts');
+  end if;
+
+  if not exists (
+    select 1 from pg_policies where schemaname = 'storage' and tablename = 'objects' and policyname = 'Public read allowed'
+  ) then
+    create policy "Public read allowed" on storage.objects for select to public using (bucket_id = 'receipts');
   end if;
 end
 $$;

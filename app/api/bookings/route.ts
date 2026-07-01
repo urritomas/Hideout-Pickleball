@@ -25,7 +25,7 @@ function calculatePrice(startHour: number, durationHours: number): number {
   for (let offset = 0; offset < durationHours; offset += 1) {
     total += hourRate(startHour + offset);
   }
-  return total;
+  return total + 20;
 }
 
 export async function GET(request: NextRequest) {

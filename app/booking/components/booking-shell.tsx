@@ -2,6 +2,7 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 
 type SlotStatus = "available" | "booked" | "selected" | "blocked" | "pending";
 
@@ -107,12 +108,11 @@ export function BookingShell() {
   const [bookings, setBookings] = useState<BookingRecord[]>([]);
   const [blockedSchedules, setBlockedSchedules] = useState<BlockedRecord[]>([]);
 
-  const [selectedCourtId, setSelectedCourtId] = useState<number | null>(null);
-  const [selectedHours, setSelectedHours] = useState<number[]>([]);
-
+  const [selectedSlots, setSelectedSlots] = useState<Array<{ courtId: number; hours: number[] }>>([]);
   const [playerName, setPlayerName] = useState("");
   const [playerEmail, setPlayerEmail] = useState("");
   const [playerPhone, setPlayerPhone] = useState("");
+  const [showReviewModal, setShowReviewModal] = useState(false);
 
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -124,6 +124,7 @@ export function BookingShell() {
   });
 
   const today = useMemo(() => toDateInput(new Date()), []);
+  const MAX_SELECTABLE_COURTS = 2;
 
   const selectedDateLabel = useMemo(
     () =>
@@ -158,16 +159,16 @@ export function BookingShell() {
       setBookings(payload.data.bookings || []);
       setBlockedSchedules(payload.data.blockedSchedules || []);
 
-      if (payload.data.courts.length > 0 && selectedCourtId && !payload.data.courts.some((court) => court.id === selectedCourtId)) {
-        setSelectedCourtId(null);
-        setSelectedHours([]);
-      }
+      const activeCourtIds = new Set((payload.data.courts || []).map((court) => court.id));
+      setSelectedSlots((current) =>
+        current.filter((slot) => activeCourtIds.has(slot.courtId)),
+      );
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "Something went wrong while loading slots.");
     } finally {
       setIsLoading(false);
     }
-  }, [selectedCourtId, selectedDate]);
+  }, [selectedDate]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -179,9 +180,12 @@ export function BookingShell() {
     [],
   );
 
-  const selectedCourtName = useMemo(
-    () => courts.find((court) => court.id === selectedCourtId)?.name ?? "-",
-    [courts, selectedCourtId],
+  const selectedCourtNames = useMemo(
+    () =>
+      selectedSlots
+        .map((slot) => courts.find((court) => court.id === slot.courtId)?.name)
+        .filter(Boolean) as string[],
+    [courts, selectedSlots],
   );
 
   const getSlotStatus = useCallback(
@@ -211,7 +215,6 @@ export function BookingShell() {
       );
 
       if (!booking) {
-        // Keep linter quiet for rowDate usage because it validates date parsing side effects consistently.
         if (!rowDate) {
           return "available";
         }
@@ -224,23 +227,35 @@ export function BookingShell() {
   );
 
   const summary = useMemo(() => {
-    if (!selectedCourtId || selectedHours.length === 0) {
-      return {
-        selectedTimeText: "No slot selected",
-        duration: 0,
-        subtotal: 0,
-        tax: 0,
-        total: 0,
-        rateLabel: "-",
-      };
+    if (selectedSlots.length === 0) {
+    return {
+      selectedTimeText: "No slot selected",
+      courts: [],
+      duration: 0,
+      subtotal: 0,
+      serviceFee: 0,
+      total: 0,
+      rateLabel: "-",
+    };
     }
 
-    const ordered = [...selectedHours].sort((a, b) => a - b);
-    const start = ordered[0];
-    const end = ordered[ordered.length - 1] + 1;
-    const subtotal = ordered.reduce((total, hour) => total + getRateForHour(hour), 0);
-    const dayHours = ordered.filter((hour) => hour < 17).length;
-    const eveningHours = ordered.filter((hour) => hour >= 17).length;
+    let totalSubtotal = 0;
+    let totalDuration = 0;
+    const breakdown: Array<{ name: string; startHour: number; endHour: number; subtotal: number; hours: number[] }> = [];
+
+    for (const slot of selectedSlots) {
+      const ordered = [...slot.hours].sort((a, b) => a - b);
+      const start = ordered[0];
+      const end = ordered[ordered.length - 1] + 1;
+      const subtotal = ordered.reduce((total, hour) => total + getRateForHour(hour), 0);
+      const name = courts.find((court) => court.id === slot.courtId)?.name ?? "-";
+      breakdown.push({ name, startHour: start, endHour: end, subtotal, hours: ordered });
+      totalSubtotal += subtotal;
+      totalDuration += ordered.length;
+    }
+
+    const dayHours = selectedSlots.reduce((total, slot) => total + slot.hours.filter((hour) => hour < 17).length, 0);
+    const eveningHours = selectedSlots.reduce((total, slot) => total + slot.hours.filter((hour) => hour >= 17).length, 0);
     const rateLabel = [
       dayHours ? `P200 x ${dayHours}` : "",
       eveningHours ? `P300 x ${eveningHours}` : "",
@@ -248,21 +263,23 @@ export function BookingShell() {
       .filter(Boolean)
       .join(" + ");
 
+    const serviceFee = 20;
+
     return {
-      selectedTimeText: `${formatHour(start)} - ${formatHour(end)}`,
-      duration: ordered.length,
-      subtotal,
-      tax: 0,
-      total: subtotal,
+      selectedTimeText: breakdown.map((c) => `${c.name} ${formatHour(c.startHour)}-${formatHour(c.endHour)}`).join(", "),
+      courts: breakdown,
+      duration: totalDuration,
+      subtotal: totalSubtotal,
+      serviceFee,
+      total: totalSubtotal + serviceFee,
       rateLabel,
     };
-  }, [selectedCourtId, selectedHours]);
+  }, [courts, selectedSlots]);
 
-  const canBook = Boolean(selectedCourtId) && selectedHours.length > 0 && Boolean(playerName) && Boolean(playerEmail);
+  const canBook = selectedSlots.length > 0 && Boolean(playerName) && Boolean(playerEmail);
 
   const clearSelection = () => {
-    setSelectedCourtId(null);
-    setSelectedHours([]);
+    setSelectedSlots([]);
   };
 
   const acceptRules = () => {
@@ -275,65 +292,82 @@ export function BookingShell() {
       return;
     }
 
-    if (!selectedCourtId || selectedCourtId !== courtId) {
-      setSelectedCourtId(courtId);
-      setSelectedHours([hour]);
-      return;
-    }
+    const existingIndex = selectedSlots.findIndex((slot) => slot.courtId === courtId);
 
-    if (selectedHours.includes(hour)) {
-      const nextHours = selectedHours.filter((entry) => entry !== hour);
-      setSelectedHours(nextHours);
-      if (nextHours.length === 0) {
-        setSelectedCourtId(null);
+    if (existingIndex >= 0) {
+      const existing = selectedSlots[existingIndex];
+
+      if (existing.hours.includes(hour)) {
+        const nextHours = existing.hours.filter((entry) => entry !== hour);
+        if (nextHours.length === 0) {
+          setSelectedSlots((prev) => prev.filter((_, idx) => idx !== existingIndex));
+        } else {
+          setSelectedSlots((prev) =>
+            prev.map((slot, idx) => (idx === existingIndex ? { ...slot, hours: nextHours } : slot)),
+          );
+        }
+        setErrorMessage(null);
+        return;
       }
+
+      if (existing.hours.length >= MAX_CONSECUTIVE_HOURS) {
+        setErrorMessage(`Maximum ${MAX_CONSECUTIVE_HOURS} consecutive hours per court.`);
+        return;
+      }
+
+      const nextHours = [...existing.hours, hour];
+      if (!isContiguous(nextHours)) {
+        setErrorMessage("Select only consecutive hours for one reservation.");
+        return;
+      }
+
+      setErrorMessage(null);
+      setSelectedSlots((prev) =>
+        prev.map((slot, idx) => (idx === existingIndex ? { ...slot, hours: nextHours.sort((a, b) => a - b) } : slot)),
+      );
       return;
     }
 
-    if (selectedHours.length >= MAX_CONSECUTIVE_HOURS) {
-      setErrorMessage("Maximum 4 consecutive hours per booking.");
-      return;
-    }
-
-    const nextHours = [...selectedHours, hour];
-    if (!isContiguous(nextHours)) {
-      setErrorMessage("Select only consecutive hours for one reservation.");
+    if (selectedSlots.length >= MAX_SELECTABLE_COURTS) {
+      setErrorMessage(`You can only reserve up to ${MAX_SELECTABLE_COURTS} courts at once.`);
       return;
     }
 
     setErrorMessage(null);
-    setSelectedHours(nextHours);
+    setSelectedSlots((prev) => [...prev, { courtId, hours: [hour] }]);
   };
 
   const bookingAction = async () => {
-    if (!selectedCourtId || selectedHours.length === 0) {
+    if (selectedSlots.length === 0) {
       return;
     }
 
-    const ordered = [...selectedHours].sort((a, b) => a - b);
-    const startHour = ordered[0];
-    const durationHours = ordered.length;
+    for (const slot of selectedSlots) {
+      const ordered = [...slot.hours].sort((a, b) => a - b);
+      const startHour = ordered[0];
+      const durationHours = ordered.length;
 
-    const response = await fetch("/api/bookings", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        courtId: selectedCourtId,
-        date: selectedDate,
-        startHour,
-        durationHours,
-        playerName,
-        playerEmail,
-        playerPhone,
-      }),
-    });
+      const response = await fetch("/api/bookings", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          courtId: slot.courtId,
+          date: selectedDate,
+          startHour,
+          durationHours,
+          playerName,
+          playerEmail,
+          playerPhone,
+        }),
+      });
 
-    const payload = (await response.json()) as { message?: string };
-    if (!response.ok) {
-      setErrorMessage(payload.message || "Failed to create booking.");
-      return;
+      const payload = (await response.json()) as { message?: string };
+      if (!response.ok) {
+        setErrorMessage(payload.message || `Failed to create booking for Court ${slot.courtId}.`);
+        return;
+      }
     }
 
     setErrorMessage(null);
@@ -342,8 +376,59 @@ export function BookingShell() {
   };
 
   return (
-    <>
-      <div className="grid gap-6 xl:grid-cols-[0.85fr_1.15fr]">
+    <div className="min-h-screen">
+      <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/80 backdrop-blur">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
+          <div className="flex items-center gap-4">
+            <button
+              type="button"
+              onClick={() => {
+                if (typeof window !== "undefined" && window.history.length > 1) {
+                  window.history.back();
+                } else {
+                  window.location.href = "/";
+                }
+              }}
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="h-4 w-4"
+                aria-hidden="true"
+              >
+                <path d="M19 12H5" />
+                <path d="M12 19 l-7-7 7-7" />
+              </svg>
+              Back
+            </button>
+            <div className="hidden h-6 w-px bg-slate-200 sm:block" />
+            <span className="text-sm font-semibold text-slate-900">{clubDetails.name}</span>
+          </div>
+          <nav className="flex items-center gap-2">
+            <Link
+              href="/"
+              className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+            >
+              Home
+            </Link>
+            <Link
+              href="/booking"
+              className="rounded-xl bg-blue-600 px-3 py-1.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-500"
+            >
+              Book a Court
+            </Link>
+          </nav>
+        </div>
+      </header>
+
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
+        <div className="grid gap-6 xl:grid-cols-[0.7fr_1.3fr]">
         <motion.section
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
@@ -470,7 +555,8 @@ export function BookingShell() {
                     setSelectedDate((current) => shiftDate(current, 1));
                     clearSelection();
                   }}
-                  className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700"
+                  disabled={selectedDate >= shiftDate(today, 30)}
+                  className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   Next
                 </button>
@@ -499,9 +585,9 @@ export function BookingShell() {
               <p className="mt-3 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">{errorMessage}</p>
             )}
 
-            <div className="mt-4 grid gap-4 2xl:grid-cols-[1fr_320px]">
-              <div className="overflow-hidden rounded-2xl border border-slate-200">
-                <div className="max-h-175 overflow-auto">
+            <div className="mt-4 grid gap-4 xl:grid-cols-[1fr_300px]">
+              <div className="overflow-x-auto rounded-2xl border border-slate-200">
+                <div className="max-h-[65vh] overflow-y-auto">
                   <table className="min-w-full border-collapse text-sm">
                     <thead className="sticky top-0 z-10 bg-slate-100 text-left text-slate-700">
                       <tr>
@@ -525,7 +611,8 @@ export function BookingShell() {
                           <tr key={hour} className="border-t border-slate-200 bg-white even:bg-slate-50/70">
                             <td className="px-3 py-2 font-medium text-slate-700">{formatHour(hour)}</td>
                             {courts.map((court) => {
-                              const selected = selectedCourtId === court.id && selectedHours.includes(hour);
+                              const slotForCourt = selectedSlots.find((slot) => slot.courtId === court.id);
+                              const selected = slotForCourt ? slotForCourt.hours.includes(hour) : false;
                               const effectiveStatus = selected ? "selected" : getSlotStatus(court.id, hour);
                               const clickable = effectiveStatus === "available" || effectiveStatus === "selected";
 
@@ -557,18 +644,42 @@ export function BookingShell() {
                     <span className="text-slate-500">Selected Date</span>
                     <span className="font-medium">{selectedDateLabel}</span>
                   </p>
-                  <p className="flex justify-between gap-3">
-                    <span className="text-slate-500">Selected Court</span>
-                    <span className="font-medium">{selectedCourtName}</span>
-                  </p>
-                  <p className="flex justify-between gap-3">
-                    <span className="text-slate-500">Selected Time</span>
-                    <span className="font-medium">{summary.selectedTimeText}</span>
-                  </p>
-                  <p className="flex justify-between gap-3">
-                    <span className="text-slate-500">Duration</span>
-                    <span className="font-medium">{summary.duration} hour(s)</span>
-                  </p>
+                  {summary.selectedTimeText === "No slot selected" ? (
+                    <>
+                      <p className="flex justify-between gap-3">
+                        <span className="text-slate-500">Selected Court</span>
+                        <span className="font-medium">-</span>
+                      </p>
+                      <p className="flex justify-between gap-3">
+                        <span className="text-slate-500">Selected Time</span>
+                        <span className="font-medium">{summary.selectedTimeText}</span>
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <div className="space-y-2">
+                        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Selected Courts</p>
+                        {summary.courts.map((court, index) => (
+                          <div key={index} className="rounded-xl border border-slate-200 bg-slate-50 p-2">
+                            <div className="flex items-center justify-between gap-3">
+                              <span className="font-medium text-slate-900">{court.name}</span>
+                              <span className="font-semibold text-blue-700">
+                                {formatHour(court.startHour)} - {formatHour(court.endHour)}
+                              </span>
+                            </div>
+                            <div className="mt-1 flex items-center justify-between gap-3 text-xs text-slate-600">
+                              <span>{court.hours.length} hour(s)</span>
+                              <span>P{court.subtotal}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <p className="flex justify-between gap-3">
+                        <span className="text-slate-500">Duration</span>
+                        <span className="font-medium">{summary.duration} hour(s)</span>
+                      </p>
+                    </>
+                  )}
                   <p className="flex justify-between gap-3">
                     <span className="text-slate-500">Rate</span>
                     <span className="font-medium">{summary.rateLabel}</span>
@@ -578,12 +689,19 @@ export function BookingShell() {
                     <span className="font-medium">P{summary.subtotal}</span>
                   </p>
                   <p className="flex justify-between gap-3">
-                    <span className="text-slate-500">Taxes</span>
-                    <span className="font-medium">P{summary.tax}</span>
+                    <span className="text-slate-500">Service Fee</span>
+                    <span className="font-medium">P{summary.serviceFee}</span>
                   </p>
                   <p className="flex justify-between gap-3 text-base font-semibold text-slate-900">
                     <span>Total</span>
                     <span>P{summary.total}</span>
+                  </p>
+                  <p className="text-xs text-slate-500">
+                    {selectedSlots.length > 0 && selectedSlots.length < MAX_SELECTABLE_COURTS
+                      ? `You can add ${MAX_SELECTABLE_COURTS - selectedSlots.length} more court(s).`
+                      : selectedSlots.length === MAX_SELECTABLE_COURTS
+                        ? `Maximum ${MAX_SELECTABLE_COURTS} courts selected.`
+                        : ""}
                   </p>
                 </div>
 
@@ -609,11 +727,11 @@ export function BookingShell() {
                   />
                   <button
                     type="button"
-                    onClick={bookingAction}
+                    onClick={() => canBook && setShowReviewModal(true)}
                     disabled={!canBook}
                     className="w-full rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-blue-200 disabled:cursor-not-allowed disabled:bg-slate-300"
                   >
-                    Confirm Booking
+                    Review & Confirm
                   </button>
                   <button
                     type="button"
@@ -627,6 +745,7 @@ export function BookingShell() {
             </div>
           </article>
         </motion.section>
+      </div>
       </div>
 
       <AnimatePresence>
@@ -700,6 +819,100 @@ export function BookingShell() {
           </motion.div>
         )}
       </AnimatePresence>
-    </>
+      {showReviewModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/65 p-4">
+          <div className="max-h-[90vh] w-full max-w-2xl overflow-auto rounded-3xl bg-white">
+            <header className="rounded-t-3xl bg-slate-950 px-6 py-5 text-white sm:px-8">
+              <p className="inline-flex rounded-full bg-lime-300 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-slate-900">
+                Review Before Booking
+              </p>
+              <h2 className="mt-3 font-display text-3xl font-semibold">Confirm Your Reservation</h2>
+              <p className="mt-2 text-sm text-slate-300">
+                Please review your selected courts, rates, and policies before confirming.
+              </p>
+            </header>
+
+            <div className="space-y-4 p-4 sm:p-6">
+              <div className="grid gap-3 sm:grid-cols-2">
+                <article className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
+                  <h3 className="font-semibold text-emerald-800">Court Rates</h3>
+                  <p className="mt-3 rounded-xl bg-white p-3 text-sm text-slate-700">8:00 AM - 4:59 PM: P200/hour</p>
+                  <p className="mt-2 rounded-xl bg-white p-3 text-sm text-slate-700">5:00 PM - 12:00 AM: P300/hour</p>
+                </article>
+
+                <article className="rounded-2xl border border-blue-200 bg-blue-50 p-4">
+                  <h3 className="font-semibold text-blue-800">Service Fee</h3>
+                  <p className="mt-3 rounded-xl bg-white p-3 text-sm text-slate-700">P20 per transaction</p>
+                </article>
+
+                <article className="rounded-2xl border border-orange-200 bg-orange-50 p-4 sm:col-span-2">
+                  <h3 className="font-semibold text-orange-800">Booking Policies</h3>
+                  <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-slate-700">
+                    <li>First come, first served.</li>
+                    <li>No double booking and no overlapping time selections.</li>
+                    <li>Maximum of 4 consecutive hours per reservation.</li>
+                    <li>Bookings cannot exceed operating hours.</li>
+                    <li>Select up to 2 courts at once for simultaneous reservations.</li>
+                  </ul>
+                </article>
+
+                <article className="rounded-2xl border border-rose-200 bg-rose-50 p-4 sm:col-span-2">
+                  <h3 className="font-semibold text-rose-800">Cancellation and Rescheduling</h3>
+                  <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-slate-700">
+                    <li>Admin approval required.</li>
+                    <li>No refunds after reservation starts.</li>
+                    <li>Reschedule only before the booking time.</li>
+                    <li>No-shows are non-refundable.</li>
+                  </ul>
+                </article>
+              </div>
+
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                <div className="space-y-2 text-sm text-slate-700">
+                  {summary.courts.map((court, index) => (
+                    <div key={index} className="flex items-center justify-between gap-3">
+                      <span className="font-medium text-slate-900">{court.name} ({court.hours.length} hour(s))</span>
+                      <span className="font-semibold text-blue-700">P{court.subtotal}</span>
+                    </div>
+                  ))}
+                  <div className="flex items-center justify-between gap-3 border-t border-slate-200 pt-2">
+                    <span className="font-medium text-slate-900">Subtotal</span>
+                    <span className="font-medium">P{summary.subtotal}</span>
+                  </div>
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="font-medium text-slate-900">Service Fee</span>
+                    <span className="font-medium">P{summary.serviceFee}</span>
+                  </div>
+                  <div className="flex items-center justify-between gap-3 text-base font-semibold text-slate-900">
+                    <span>Total</span>
+                    <span>P{summary.total}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
+                <button
+                  type="button"
+                  onClick={() => setShowReviewModal(false)}
+                  className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    setShowReviewModal(false);
+                    await bookingAction();
+                  }}
+                  className="rounded-xl bg-lime-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-lime-600"
+                >
+                  Confirm & Pay
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }

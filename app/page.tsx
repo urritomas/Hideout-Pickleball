@@ -5,7 +5,7 @@ import Image from "next/image";
 
 const whyChooseUs = [
   {
-    title: "Tournament-grade indoor courts",
+    title: "Tournament-grade outdoor courts",
     description: "Consistent bounce, premium surfaces, and climate-controlled comfort year-round.",
   },
   {
@@ -42,7 +42,7 @@ const faqs = [
   },
   {
     q: "How many courts does Hideout have?",
-    a: "Hideout Pickleball Club has exactly two indoor courts: Court 1 and Court 2.",
+    a: "Hideout Pickleball Club has exactly two outdoor courts: Court 1 and Court 2.",
   },
 ];
 

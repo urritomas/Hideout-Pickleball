@@ -11,15 +11,10 @@ export default function BookingPage() {
   return (
     <>
       <SiteHeader
-        brandLabel={
-          <>
-            <span className="rounded-lg bg-blue-600 px-2 py-1 text-white">H</span> Hideout Pickleball
-          </>
-        }
         navItems={[
-          { href: "/", label: "Home" },
-          { href: "/booking", label: "View Schedule" },
-          { href: "/booking", label: "Book a Court", primary: true },
+          { href: "/", label: "Home", key: "home" },
+          { href: "/booking", label: "View Schedule", key: "schedule" },
+          { href: "/booking", label: "Book a Court", primary: true, key: "book" },
         ]}
       />
       <BookingShell />

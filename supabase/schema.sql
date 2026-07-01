@@ -1,5 +1,5 @@
 -- Hideout Pickleball Club schema
--- Run this in Supabase SQL editor.
+-- Run this in Supabase SQL editor. Safe to re-run.
 
 create extension if not exists pgcrypto;
 
@@ -10,22 +10,6 @@ create table if not exists public.courts (
   created_at timestamptz not null default now()
 );
 
-do $$
-begin
-  if not exists (
-    select 1
-    from pg_type t
-    join pg_namespace n on n.oid = t.typnamespace
-    where t.typname = 'booking_status'
-      and n.nspname = 'public'
-  ) then
-    create type public.booking_status as enum ('pending', 'booked', 'confirmed', 'cancelled');
-  else
-    alter type public.booking_status add value if not exists 'booked';
-  end if;
-end
-$$;
-
 create table if not exists public.bookings (
   id uuid primary key default gen_random_uuid(),
   court_id bigint not null references public.courts(id) on delete restrict,
@@ -35,8 +19,7 @@ create table if not exists public.bookings (
   start_at timestamptz not null,
   end_at timestamptz not null,
   total_price numeric(10,2) not null,
-  status public.booking_status not null default 'pending',
-  payment_receipt_url text,
+  status text not null default 'pending',
   notes text,
   created_at timestamptz not null default now(),
   constraint bookings_valid_time check (start_at < end_at)
@@ -63,6 +46,19 @@ create table if not exists public.payments (
   created_at timestamptz not null default now()
 );
 
+do $$
+begin
+  if not exists (
+    select 1 from information_schema.columns
+    where table_schema = 'public'
+      and table_name = 'bookings'
+      and column_name = 'payment_receipt_url'
+  ) then
+    alter table public.bookings add column payment_receipt_url text;
+  end if;
+end
+$$;
+
 create index if not exists idx_bookings_court_time on public.bookings(court_id, start_at, end_at);
 create index if not exists idx_blocked_court_time on public.blocked_schedules(court_id, start_at, end_at);
 
@@ -70,7 +66,6 @@ insert into public.courts (name)
 values ('Court 1'), ('Court 2')
 on conflict (name) do nothing;
 
--- Minimal RLS baseline (adjust to your auth model)
 alter table public.courts enable row level security;
 alter table public.bookings enable row level security;
 alter table public.blocked_schedules enable row level security;

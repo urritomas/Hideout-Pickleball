@@ -1,7 +1,7 @@
-
 import Link from "next/link";
 import { SiteHeader } from "@/app/components/site-header";
 import { FadeIn, Stagger } from "@/components/shared/motion";
+import Image from "next/image";
 
 const whyChooseUs = [
   {
@@ -50,47 +50,52 @@ export default function HomePage() {
   return (
     <>
       <SiteHeader
-        brandLabel={
-          <>
-            <span className="rounded-lg bg-blue-600 px-2 py-1 text-white">H</span> Hideout Pickleball
-          </>
-        }
+        logoSrc="/hideoutLogo.png"
         navItems={[
-          { href: "/booking", label: "View Schedule" },
-          { href: "/booking", label: "Book a Court", primary: true },
+          { href: "/booking", label: "View Schedule", key: "schedule" },
+          { href: "/booking", label: "Book a Court", primary: true, key: "book" },
         ]}
       />
 
       <main className="flex-1">
         <section className="section-shell py-12 sm:py-16">
           <FadeIn>
-            <div className="relative overflow-hidden rounded-3xl border border-blue-100 bg-slate-900 p-8 text-white card-shadow sm:p-14">
+            <div className="relative overflow-hidden rounded-3xl border border-blue-100 bg-slate-900 text-white card-shadow sm:p-14">
               <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_85%_20%,rgba(96,165,250,0.32),transparent_38%)]" />
-              <div className="grid gap-10 lg:grid-cols-[1.2fr_0.8fr] lg:items-end">
-                <div>
-                <p className="mb-4 inline-flex rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-blue-100">
-                  Your Home for Pickleball.
-                </p>
-                <h1 className="font-display text-4xl font-semibold leading-tight sm:text-5xl lg:text-6xl">
-                  Outdoor pickleball booking reimagined for speed and clarity.
-                </h1>
-                <p className="mt-6 max-w-2xl text-sm text-blue-100/90 sm:text-base">
-                  Reserve one of two outdoor courts.
-                </p>
-                <div className="mt-8 flex flex-wrap gap-3">
-                  <Link
-                    href="/booking"
-                    className="rounded-full bg-blue-500 px-6 py-3 text-sm font-semibold text-white transition hover:bg-blue-400"
-                  >
-                    Book a Court
-                  </Link>
-                  <Link
-                    href="/booking"
-                    className="rounded-full border border-white/30 bg-white/10 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/20"
-                  >
-                    View Schedule
-                  </Link>
+              <div className="grid gap-10 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
+                <div className="space-y-6">
+                  <p className="inline-flex rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-blue-100">
+                    Your Home for Pickleball.
+                  </p>
+                  <h1 className="font-display text-4xl font-semibold leading-tight sm:text-5xl lg:text-6xl">
+                    Outdoor pickleball booking reimagined for speed and clarity.
+                  </h1>
+                  <p className="max-w-2xl text-sm text-blue-100/90 sm:text-base">
+                    Reserve one of two outdoor courts in seconds with live availability, transparent pricing, and instant confirmation.
+                  </p>
+                  <div className="flex flex-wrap gap-3">
+                    <Link
+                      href="/booking"
+                      className="rounded-full bg-blue-500 px-6 py-3 text-sm font-semibold text-white transition hover:bg-blue-400"
+                    >
+                      Book a Court
+                    </Link>
+                    <Link
+                      href="/booking"
+                      className="rounded-full border border-white/30 bg-white/10 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/20"
+                    >
+                      View Schedule
+                    </Link>
+                  </div>
                 </div>
+                <div className="hidden lg:flex items-center justify-center">
+                  <Image
+                    src="/hideout.png"
+                    alt="Hideout Pickleball"
+                    width={320}
+                    height={320}
+                    className="h-56 w-auto rounded-3xl border border-white/20 bg-white/10 p-4 shadow-xl backdrop-blur-sm"
+                  />
                 </div>
               </div>
             </div>

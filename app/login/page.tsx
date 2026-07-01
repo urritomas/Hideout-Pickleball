@@ -10,14 +10,9 @@ export default function LoginPage() {
   return (
     <>
       <SiteHeader
-        brandLabel={
-          <>
-            <span className="rounded-lg bg-blue-600 px-2 py-1 text-white">H</span> Hideout Pickleball
-          </>
-        }
         navItems={[
-          { href: "/booking", label: "View Schedule" },
-          { href: "/booking", label: "Book a Court", primary: true },
+          { href: "/booking", label: "View Schedule", key: "schedule" },
+          { href: "/booking", label: "Book a Court", primary: true, key: "book" },
         ]}
       />
       <main className="section-shell flex flex-1 items-center justify-center py-16">

@@ -19,17 +19,12 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <main className="section-shell py-8 sm:py-10">
+    <main className="section-shell">
       <SiteHeader
-        brandLabel={
-          <>
-            <span className="rounded-lg bg-blue-600 px-2 py-1 text-white">H</span> Hideout Pickleball
-          </>
-        }
-        navItems={links}
+        navItems={links.map((item) => ({ ...item, key: item.href }))}
       />
 
-      <div className="grid gap-6 lg:grid-cols-[260px_1fr]">
+      <div className="grid gap-6 lg:grid-cols-[260px_1fr] py-8 sm:py-10">
         <aside className="h-fit rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
           <p className="px-3 pb-2 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Admin</p>
           <nav className="space-y-1">

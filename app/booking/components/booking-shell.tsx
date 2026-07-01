@@ -1103,10 +1103,11 @@ export function BookingShell() {
                           }),
                         });
 
-                        const patchPayload = (await patchResponse.json()) as { message?: string };
-                        if (!patchResponse.ok) {
-                          throw new Error(patchPayload.message || "Failed to confirm booking.");
-                        }
+                         const patchPayload = (await patchResponse.json()) as { message?: string; details?: string };
+                         if (!patchResponse.ok) {
+                           const details = patchPayload.details || patchPayload.message || "Failed to confirm booking.";
+                           throw new Error(details);
+                         }
 
                         setPaymentStep(null);
                         setPaymentReceipt(null);

@@ -187,6 +187,10 @@ export async function PATCH(request: Request) {
     updateData.payment_receipt_url = payload.payment_receipt_url;
   }
 
+  if (Object.keys(updateData).length === 0) {
+    return NextResponse.json({ message: "No fields provided for update." }, { status: 400 });
+  }
+
   const { data, error } = await supabase
     .from("bookings")
     .update(updateData)
@@ -198,10 +202,14 @@ export async function PATCH(request: Request) {
     return NextResponse.json(
       {
         message: "Failed to update booking.",
-        details: error.message,
+        details: error.message || error.details || error.hint || JSON.stringify(error),
       },
       { status: 500 },
     );
+  }
+
+  if (!data) {
+    return NextResponse.json({ message: "Booking not found." }, { status: 404 });
   }
 
   return NextResponse.json({ data });

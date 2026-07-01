@@ -115,30 +115,25 @@ export default function AdminConfirmationPage() {
   return (
     <>
       <SiteHeader
-        brandLabel={
-          <>
-            <span className="rounded-lg bg-blue-600 px-2 py-1 text-white">H</span> Hideout Pickleball
-          </>
-        }
         navItems={[
-          { href: "/dashboard", label: "Overview" },
-          { href: "/dashboard/bookings", label: "Today's Bookings" },
-          { href: "/dashboard/courts", label: "Courts" },
-          { href: "/dashboard/users", label: "Users" },
-          { href: "/dashboard/revenue", label: "Revenue" },
-          { href: "/dashboard/payments", label: "Payments" },
-          { href: "/dashboard/adminConfirmation", label: "Confirm Bookings" },
-          { href: "/dashboard/calendar", label: "Calendar" },
-          { href: "/dashboard/settings", label: "Settings" },
+          { href: "/dashboard", label: "Overview", key: "overview" },
+          { href: "/dashboard/bookings", label: "Today's Bookings", key: "bookings" },
+          { href: "/dashboard/courts", label: "Courts", key: "courts" },
+          { href: "/dashboard/users", label: "Users", key: "users" },
+          { href: "/dashboard/revenue", label: "Revenue", key: "revenue" },
+          { href: "/dashboard/payments", label: "Payments", key: "payments" },
+          { href: "/dashboard/adminConfirmation", label: "Confirm Bookings", key: "confirm" },
+          { href: "/dashboard/calendar", label: "Calendar", key: "calendar" },
+          { href: "/dashboard/settings", label: "Settings", key: "settings" },
         ]}
       />
       <div className="space-y-6">
-      <header className="overflow-hidden rounded-3xl border border-blue-100 bg-slate-900 p-6 text-white shadow-sm">
-        <h1 className="font-display text-3xl font-semibold text-slate-900">Admin Confirmation</h1>
-        <p className="mt-1 text-sm text-slate-300">
-          Review pending bookings, verify payment receipts, and confirm reservations.
-        </p>
-      </header>
+        <header className="overflow-hidden rounded-3xl border border-blue-100 bg-slate-900 p-6 text-white shadow-sm">
+          <h1 className="font-display text-3xl font-semibold text-slate-900">Admin Confirmation</h1>
+          <p className="mt-1 text-sm text-slate-300">
+            Review pending bookings, verify payment receipts, and confirm reservations.
+          </p>
+        </header>
 
       {errorMessage && (
         <p className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">{errorMessage}</p>

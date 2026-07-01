@@ -9,14 +9,9 @@ export default function ProfilePage() {
   return (
     <>
       <SiteHeader
-        brandLabel={
-          <>
-            <span className="rounded-lg bg-blue-600 px-2 py-1 text-white">H</span> Hideout Pickleball
-          </>
-        }
         navItems={[
-          { href: "/booking", label: "View Schedule" },
-          { href: "/booking", label: "Book a Court", primary: true },
+          { href: "/booking", label: "View Schedule", key: "schedule" },
+          { href: "/booking", label: "Book a Court", primary: true, key: "book" },
         ]}
       />
       <main className="section-shell py-10 sm:py-14">

@@ -130,10 +130,6 @@ export default function DashboardRevenuePage() {
           <p className="text-xs text-slate-500">Average Booking</p>
           <p className="mt-1 font-display text-xl font-semibold text-slate-900">{formatCurrency(data.averageBookingValue)}</p>
         </div>
-        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-          <p className="text-xs text-slate-500">Payment Methods</p>
-          <p className="mt-1 font-display text-xl font-semibold text-slate-900">{data.paymentMethodBreakdown.length}</p>
-        </div>
       </div>
 
       <div className="mt-4 sm:mt-6 grid gap-4 grid-cols-1 lg:grid-cols-2">
@@ -167,24 +163,7 @@ export default function DashboardRevenuePage() {
           )}
         </div>
 
-        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-          <h3 className="font-display text-base sm:text-lg font-semibold text-slate-900">Payment Methods</h3>
-          {data.paymentMethodBreakdown.length === 0 ? (
-            <p className="mt-4 text-sm text-slate-500">No payment data for this period.</p>
-          ) : (
-            <ul className="mt-4 space-y-3">
-              {data.paymentMethodBreakdown.map((method) => (
-                <li key={method.method} className="flex items-center justify-between rounded-xl bg-white p-3">
-                  <span className="text-sm font-medium text-slate-900 capitalize">{method.method}</span>
-                  <div className="text-right">
-                    <p className="text-sm font-semibold text-slate-900">{formatCurrency(method.total_amount)}</p>
-                    <p className="text-xs text-slate-500">{method.count} transaction(s)</p>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
+        
       </div>
     </div>
   );

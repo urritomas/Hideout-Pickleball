@@ -475,13 +475,13 @@ export function BookingShell() {
           className="space-y-5"
         >
           <article className="glass card-shadow overflow-hidden rounded-3xl border border-blue-100">
-            <div
-              className="h-64 bg-cover bg-center"
-              style={{
-                backgroundImage:
-                  "url('https://images.unsplash.com/photo-1656982134572-5d7b4714d6e7?auto=format&fit=crop&w=1400&q=80')",
-              }}
-            />
+<div
+               className="h-64 bg-cover bg-center"
+               style={{
+                 backgroundImage:
+                   "url('/hideout.png')",
+               }}
+             />
             <div className="p-6">
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
@@ -606,9 +606,6 @@ export function BookingShell() {
                 </span>
                 <span className="inline-flex items-center gap-2 rounded-lg bg-white px-2 py-1 font-medium">
                   <i className="h-2 w-2 rounded-full bg-amber-500" /> Pending
-                </span>
-                <span className="inline-flex items-center gap-2 rounded-lg bg-white px-2 py-1 font-medium">
-                  <i className="h-2 w-2 rounded-full bg-slate-400" /> Cancelled
                 </span>
               </div>
 

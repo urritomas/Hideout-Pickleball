@@ -37,7 +37,6 @@ const OPENING_HOUR = 8;
 const CLOSING_HOUR = 24;
 const STATUS_OPTIONS = [
   { value: "available", label: "Available", abbr: "Avail", className: "bg-emerald-100 text-emerald-700 border-emerald-200" },
-  { value: "booked", label: "Booked", abbr: "Booked", className: "bg-indigo-600 text-white border-indigo-700" },
   { value: "unavailable", label: "Unavailable", abbr: "Unavail", className: "bg-rose-600 text-white border-rose-700" },
   { value: "open play", label: "Open Play", abbr: "Open", className: "bg-emerald-600 text-white border-emerald-700" },
   { value: "cancelled", label: "Cancelled", abbr: "Cancel", className: "bg-slate-100 text-slate-700 border-slate-200" },

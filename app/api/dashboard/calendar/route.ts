@@ -152,7 +152,7 @@ export async function POST(request: NextRequest) {
         start_at: startAt,
         end_at: endAt,
         total_price: 0,
-        status: payload.status === "booked" ? "booked" : "confirmed",
+        status: "confirmed",
         notes: payload.reason || `Admin schedule: ${payload.status}`,
       })
       .select("id,court_id,start_at,end_at,status,player_name")
@@ -217,7 +217,7 @@ export async function DELETE(request: NextRequest) {
       .eq("court_id", payload.courtId)
       .lt("start_at", endAt)
       .gt("end_at", startAt)
-      .in("status", ["booked", "confirmed", "pending"]);
+      .in("status", ["confirmed", "pending"]);
 
     if (error) {
       return NextResponse.json(

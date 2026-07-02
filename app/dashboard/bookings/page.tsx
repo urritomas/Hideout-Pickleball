@@ -28,8 +28,8 @@ function formatCurrency(value: number): string {
 const STATUS_COLORS: Record<string, string> = {
   confirmed: "bg-emerald-100 text-emerald-700",
   pending: "bg-amber-100 text-amber-700",
-  cancelled: "bg-rose-100 text-rose-700",
   booked: "bg-indigo-100 text-indigo-700",
+  cancelled: "bg-rose-100 text-rose-700",
 };
 
 export default function DashboardBookingsPage() {
@@ -192,6 +192,14 @@ export default function DashboardBookingsPage() {
                               Cancel
                             </button>
                           )}
+                          {booking.status === "cancelled" && (
+                            <button
+                              onClick={() => updateStatus(booking.id, "confirmed")}
+                              className="rounded-lg bg-slate-600 px-3 py-1 text-xs font-semibold text-white transition hover:bg-slate-500 min-h-[44px]"
+                            >
+                              Undo Cancel
+                            </button>
+                          )}
                           {booking.payment_receipt_url && (
                             <a
                               href={booking.payment_receipt_url}
@@ -245,6 +253,14 @@ export default function DashboardBookingsPage() {
                         className="rounded-lg bg-rose-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-rose-500 min-h-[44px]"
                       >
                         Cancel
+                      </button>
+                    )}
+                    {booking.status === "cancelled" && (
+                      <button
+                        onClick={() => updateStatus(booking.id, "confirmed")}
+                        className="rounded-lg bg-slate-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-slate-500 min-h-[44px]"
+                      >
+                        Undo Cancel
                       </button>
                     )}
                     {booking.payment_receipt_url && (

@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
         .select("court_id,start_at,end_at,status,player_name")
         .gte("start_at", startDate)
         .lt("start_at", endDate)
-        .in("status", ["pending", "confirmed", "booked", "cancelled"]),
+        .in("status", ["pending", "confirmed", "booked"]),
       supabase
         .from("blocked_schedules")
         .select("court_id,start_at,end_at,reason")
@@ -62,7 +62,6 @@ export async function GET(request: NextRequest) {
       const reason = (b.reason || "").toLowerCase();
       let status = "unavailable";
       if (reason === "open play") status = "open play";
-      else if (reason === "cancelled") status = "cancelled";
 
       return {
         court_id: b.court_id,
@@ -108,12 +107,10 @@ export async function POST(request: NextRequest) {
     const startAt = `${payload.date}T${String(payload.startHour).padStart(2, "0")}:00:00+08:00`;
     const endAt = `${payload.date}T${String(payload.endHour).padStart(2, "0")}:00:00+08:00`;
 
-    if (payload.status === "unavailable" || payload.status === "open play" || payload.status === "cancelled") {
+    if (payload.status === "unavailable" || payload.status === "open play") {
       const reasonMap: Record<string, string> = {
         unavailable: "Unavailable",
         "open play": "Open Play",
-        blocked: payload.reason || "Blocked",
-        cancelled: "Cancelled",
       };
 
       const { data, error } = await supabase

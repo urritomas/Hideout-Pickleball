@@ -163,7 +163,7 @@ export default function HomePage() {
       <footer className="w-full border-t border-slate-200 bg-white/80">
         <div className="flex flex-col gap-2 py-6 sm:py-8 text-sm text-slate-600 sm:flex-row sm:items-center sm:justify-between px-4 sm:px-6 max-w-7xl mx-auto">
           <p>Hideout Court and Cafe</p>
-          <p>Contact: hello@hideoutpickleball.club</p>
+          <p>Contact: 0917-105-8580</p>
         </div>
       </footer>
     </>

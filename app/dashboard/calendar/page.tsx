@@ -39,7 +39,6 @@ const STATUS_OPTIONS = [
   { value: "available", label: "Available", abbr: "Avail", className: "bg-emerald-100 text-emerald-700 border-emerald-200" },
   { value: "unavailable", label: "Unavailable", abbr: "Unavail", className: "bg-rose-600 text-white border-rose-700" },
   { value: "open play", label: "Open Play", abbr: "Open", className: "bg-emerald-600 text-white border-emerald-700" },
-  { value: "cancelled", label: "Cancelled", abbr: "Cancel", className: "bg-slate-100 text-slate-700 border-slate-200" },
 ];
 
 const COURTS = [
@@ -123,7 +122,6 @@ export default function DashboardCalendarPage() {
         const reason = (b.reason || "").toLowerCase();
         let status = "unavailable";
         if (reason === "open play") status = "open play";
-        else if (reason === "cancelled") status = "cancelled";
 
         return {
           court_id: b.court_id,
@@ -212,7 +210,6 @@ export default function DashboardCalendarPage() {
           startHour: hour,
           endHour: hour + 1,
           status,
-          reason: status,
         }),
       });
 
@@ -363,12 +360,12 @@ export default function DashboardCalendarPage() {
                         title={`${court.name} - ${hour}:00 - ${cell.label}`}
                         className={`h-full w-full appearance-none rounded-none bg-black/[0.04] px-2 py-2 pr-6 text-xs font-semibold transition text-center disabled:cursor-wait disabled:opacity-60 ${cell.className}`}
                       >
-                       <option value="available">Available</option>
-                       {STATUS_OPTIONS.filter((option) => option.value !== "available").map((option) => (
-                         <option key={option.value} value={option.value}>{option.label}</option>
-                       ))}
-                     </select>
-                   );
+                         <option value="available">Available</option>
+                         {STATUS_OPTIONS.filter((option) => option.value !== "available").map((option) => (
+                           <option key={option.value} value={option.value}>{option.label}</option>
+                         ))}
+                      </select>
+                    );
                 })}
               </React.Fragment>
             );

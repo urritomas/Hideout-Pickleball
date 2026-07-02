@@ -8,6 +8,7 @@ export async function GET(request: NextRequest) {
     const supabase = createClient(cookieStore);
 
     const date = request.nextUrl.searchParams.get("date");
+    const status = request.nextUrl.searchParams.get("status");
     const dateStart = date ? `${date}T00:00:00` : null;
     const dateEnd = date ? `${date}T23:59:59.999` : null;
 
@@ -16,9 +17,13 @@ export async function GET(request: NextRequest) {
       .select("id,court_id,start_at,end_at,status,total_price,player_name,player_email,player_phone,payment_receipt_url,courts!inner(name)")
       .order("created_at", { ascending: false });
 
-    const query = dateStart && dateEnd
+    let query = dateStart && dateEnd
       ? bookingsQuery.gte("start_at", dateStart).lte("start_at", dateEnd)
       : bookingsQuery;
+
+    if (status) {
+      query = query.eq("status", status);
+    }
 
     const { data: bookings, error } = await query;
 
@@ -41,9 +46,9 @@ export async function GET(request: NextRequest) {
       total_price: b.total_price,
       status: b.status,
       payment_receipt_url: b.payment_receipt_url,
-    }));
+    })) || [];
 
-    return NextResponse.json({ data: formattedBookings || [] });
+    return NextResponse.json({ data: formattedBookings });
   } catch (error) {
     return NextResponse.json(
       {

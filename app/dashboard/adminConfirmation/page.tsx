@@ -1,6 +1,5 @@
 "use client";
 
-import { SiteHeader } from "@/app/components/site-header";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 type BookingRecord = {
@@ -113,27 +112,13 @@ export default function AdminConfirmationPage() {
   const pending = useMemo(() => bookings.filter((b) => b.status === "pending"), [bookings]);
 
   return (
-    <>
-      <SiteHeader
-        navItems={[
-          { href: "/dashboard", label: "Overview", key: "overview" },
-          { href: "/dashboard/bookings", label: "Today's Bookings", key: "bookings" },
-          { href: "/dashboard/courts", label: "Courts", key: "courts" },
-          { href: "/dashboard/users", label: "Users", key: "users" },
-          { href: "/dashboard/revenue", label: "Revenue", key: "revenue" },
-          { href: "/dashboard/payments", label: "Payments", key: "payments" },
-          { href: "/dashboard/adminConfirmation", label: "Confirm Bookings", key: "confirm" },
-          { href: "/dashboard/calendar", label: "Calendar", key: "calendar" },
-          { href: "/dashboard/settings", label: "Settings", key: "settings" },
-        ]}
-      />
-      <div className="space-y-6">
-        <header className="overflow-hidden rounded-2xl sm:rounded-3xl border border-blue-100 bg-slate-900 p-5 sm:p-6 text-white shadow-sm">
-          <h1 className="font-display text-2xl sm:text-3xl font-semibold text-slate-900">Admin Confirmation</h1>
-          <p className="mt-1 text-xs sm:text-sm text-slate-300">
-            Review pending bookings, verify payment receipts, and confirm reservations.
-          </p>
-        </header>
+    <div className="space-y-6">
+      <header className="overflow-hidden rounded-2xl sm:rounded-3xl border border-blue-100 bg-slate-900 p-5 sm:p-6 shadow-sm">
+        <h1 className="font-display text-2xl sm:text-3xl font-semibold text-slate-900">Admin Confirmation</h1>
+        <p className="mt-1 text-xs sm:text-sm text-slate-300">
+          Review pending bookings, verify payment receipts, and confirm reservations.
+        </p>
+      </header>
 
       {errorMessage && (
         <p className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">{errorMessage}</p>
@@ -190,14 +175,14 @@ export default function AdminConfirmationPage() {
                         View Receipt
                       </a>
                     )}
-                     <button
-                       type="button"
-                       onClick={() => confirmBooking(booking.id)}
-                       disabled={processingId === booking.id}
-                       className="min-h-[44px] rounded-xl bg-lime-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-lime-600 disabled:cursor-not-allowed disabled:bg-slate-300"
-                     >
-                       {processingId === booking.id ? "Confirming..." : "Confirm Payment"}
-                     </button>
+                    <button
+                      type="button"
+                      onClick={() => confirmBooking(booking.id)}
+                      disabled={processingId === booking.id}
+                      className="min-h-[44px] rounded-xl bg-lime-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-lime-600 disabled:cursor-not-allowed disabled:bg-slate-300"
+                    >
+                      {processingId === booking.id ? "Confirming..." : "Confirm Payment"}
+                    </button>
                   </div>
                 </div>
               </article>
@@ -206,6 +191,5 @@ export default function AdminConfirmationPage() {
         </div>
       )}
     </div>
-    </>
   );
 }

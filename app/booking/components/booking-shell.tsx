@@ -7,7 +7,7 @@ import { QRCodeCanvas } from "qrcode.react";
 import Image from "next/image";
 import { SiteHeader } from "@/app/components/site-header";
 
-type SlotStatus = "available" | "unavailable" | "selected" | "blocked" | "pending" | "booked";
+type SlotStatus = "available" | "unavailable" | "selected" | "open play" | "pending" | "booked" | "cancelled";
 
 type Court = {
   id: number;
@@ -19,7 +19,7 @@ type BookingRecord = {
   court_id: number;
   start_at: string;
   end_at: string;
-  status: "pending" | "confirmed" | "cancelled";
+  status: "pending" | "confirmed" | "booked" | "cancelled";
   player_name?: string;
   total_price?: number;
 };
@@ -30,6 +30,7 @@ type BlockedRecord = {
   start_at: string;
   end_at: string;
   reason: string | null;
+  status?: string;
 };
 
 type AvailabilityPayload = {
@@ -46,7 +47,7 @@ const RULES_KEY = "hideout.booking.rules.v1";
 const amenities = ["Air-conditioned indoor venue", "Locker shelves", "Shower room", "Drinking water station"];
 
 const clubDetails = {
-  name: "Hideout Pickleball Club",
+  name: "Hideout Court and Cafe",
   location: "Davao City, Philippines",
   tagline: "Your Home for Pickleball.",
 };
@@ -58,7 +59,10 @@ function formatHour(hour24: number): string {
 }
 
 function toDateInput(date: Date): string {
-  return date.toISOString().split("T")[0];
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
 }
 
 function fromDateInput(raw: string): Date {
@@ -90,11 +94,20 @@ function statusStyles(status: SlotStatus): string {
   if (status === "selected") {
     return "border-blue-500 bg-blue-600 text-white";
   }
-  if (status === "blocked") {
-    return "cursor-not-allowed border-rose-200 bg-rose-50 text-rose-700";
+  if (status === "unavailable") {
+    return "cursor-not-allowed border-rose-600 bg-rose-100 text-rose-700";
+  }
+  if (status === "open play") {
+    return "cursor-not-allowed border-emerald-600 bg-emerald-100 text-emerald-700";
   }
   if (status === "pending") {
     return "cursor-not-allowed border-amber-200 bg-amber-50 text-amber-700";
+  }
+  if (status === "booked") {
+    return "cursor-not-allowed border-indigo-600 bg-indigo-100 text-indigo-700";
+  }
+  if (status === "cancelled") {
+    return "cursor-not-allowed border-slate-300 bg-slate-100 text-slate-600 line-through";
   }
   return "cursor-not-allowed border-slate-200 bg-slate-200 text-slate-600";
 }
@@ -116,7 +129,7 @@ export function BookingShell() {
   const [playerEmail, setPlayerEmail] = useState("");
   const [playerPhone, setPlayerPhone] = useState("");
   const [showReviewModal, setShowReviewModal] = useState(false);
-  const [paymentStep, setPaymentStep] = useState<{ bookingId: string } | null>(null);
+  const [paymentStep, setPaymentStep] = useState<{ bookingIds: string[] } | null>(null);
   const [paymentDetails, setPaymentDetails] = useState<{
     courts: Array<{ name: string; startHour: number; endHour: number; subtotal: number; hours: number[] }>;
     duration: number;
@@ -208,6 +221,26 @@ export function BookingShell() {
     fetchAvailability();
   }, [fetchAvailability]);
 
+  useEffect(() => {
+    const handleScheduleChange = () => {
+      fetchAvailability();
+    };
+
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") {
+        fetchAvailability();
+      }
+    };
+
+    window.addEventListener("court-schedule-changed", handleScheduleChange);
+    document.addEventListener("visibilitychange", handleVisibility);
+
+    return () => {
+      window.removeEventListener("court-schedule-changed", handleScheduleChange);
+      document.removeEventListener("visibilitychange", handleVisibility);
+    };
+  }, [fetchAvailability]);
+
   const timeRows = useMemo(
     () => Array.from({ length: CLOSING_HOUR - OPENING_HOUR }, (_, index) => OPENING_HOUR + index),
     [],
@@ -237,7 +270,14 @@ export function BookingShell() {
         (row) => row.court_id === courtId && overlaps(hour, row.start_at, row.end_at),
       );
       if (blocked) {
-        return "blocked";
+        const reason = (blocked.reason || "").toLowerCase();
+        if (reason === "open play") {
+          return "open play";
+        }
+        if (reason === "cancelled") {
+          return "cancelled";
+        }
+        return "unavailable";
       }
 
       const booking = bookings.find(
@@ -498,17 +538,6 @@ export function BookingShell() {
               <li>Bookings cannot exceed operating hours.</li>
             </ul>
           </article>
-
-          <article className="glass card-shadow rounded-3xl border border-blue-100 p-6">
-            <h2 className="font-display text-xl font-semibold text-slate-900">Amenities</h2>
-            <div className="mt-4 flex flex-wrap gap-2">
-              {amenities.map((item) => (
-                <span key={item} className="rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700">
-                  {item}
-                </span>
-              ))}
-            </div>
-          </article>
         </motion.section>
 
         <motion.section
@@ -559,26 +588,29 @@ export function BookingShell() {
               </div>
             </div>
 
-            <div className="mt-4 grid grid-cols-2 gap-2 rounded-2xl bg-slate-50 p-3 text-xs text-slate-600 sm:grid-cols-3 lg:grid-cols-6">
-              <span className="inline-flex items-center gap-2 rounded-lg bg-white px-2 py-1 font-medium">
-                <i className="h-2 w-2 rounded-full bg-emerald-500" /> Available
-              </span>
-              <span className="inline-flex items-center gap-2 rounded-lg bg-white px-2 py-1 font-medium">
-                <i className="h-2 w-2 rounded-full bg-slate-400" /> Unavailable
-              </span>
-              <span className="inline-flex items-center gap-2 rounded-lg bg-white px-2 py-1 font-medium">
-                <i className="h-2 w-2 rounded-full bg-indigo-500" /> Booked
-              </span>
-              <span className="inline-flex items-center gap-2 rounded-lg bg-white px-2 py-1 font-medium">
-                <i className="h-2 w-2 rounded-full bg-blue-600" /> Selected
-              </span>
-              <span className="inline-flex items-center gap-2 rounded-lg bg-white px-2 py-1 font-medium">
-                <i className="h-2 w-2 rounded-full bg-rose-500" /> Blocked
-              </span>
-              <span className="inline-flex items-center gap-2 rounded-lg bg-white px-2 py-1 font-medium">
-                <i className="h-2 w-2 rounded-full bg-amber-500" /> Pending
-              </span>
-            </div>
+<div className="mt-4 grid grid-cols-2 gap-2 rounded-2xl bg-slate-50 p-3 text-xs text-slate-600 sm:grid-cols-3 lg:grid-cols-7">
+                <span className="inline-flex items-center gap-2 rounded-lg bg-white px-2 py-1 font-medium">
+                  <i className="h-2 w-2 rounded-full bg-emerald-500" /> Available
+                </span>
+                <span className="inline-flex items-center gap-2 rounded-lg bg-white px-2 py-1 font-medium">
+                  <i className="h-2 w-2 rounded-full bg-rose-600" /> Unavailable
+                </span>
+                <span className="inline-flex items-center gap-2 rounded-lg bg-white px-2 py-1 font-medium">
+                  <i className="h-2 w-2 rounded-full bg-indigo-500" /> Booked
+                </span>
+                <span className="inline-flex items-center gap-2 rounded-lg bg-white px-2 py-1 font-medium">
+                  <i className="h-2 w-2 rounded-full bg-blue-600" /> Selected
+                </span>
+                <span className="inline-flex items-center gap-2 rounded-lg bg-white px-2 py-1 font-medium">
+                  <i className="h-2 w-2 rounded-full bg-emerald-600" /> Open Play
+                </span>
+                <span className="inline-flex items-center gap-2 rounded-lg bg-white px-2 py-1 font-medium">
+                  <i className="h-2 w-2 rounded-full bg-amber-500" /> Pending
+                </span>
+                <span className="inline-flex items-center gap-2 rounded-lg bg-white px-2 py-1 font-medium">
+                  <i className="h-2 w-2 rounded-full bg-slate-400" /> Cancelled
+                </span>
+              </div>
 
             {errorMessage && (
               <p className="mt-3 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">{errorMessage}</p>
@@ -903,7 +935,7 @@ export function BookingShell() {
                     setShowReviewModal(false);
                     const ids = await bookingAction();
                     if (ids.length > 0) {
-                      setPaymentStep({ bookingId: ids[0] });
+                      setPaymentStep({ bookingIds: ids });
                     }
                   }}
                   className="rounded-xl bg-lime-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-lime-600"
@@ -981,17 +1013,17 @@ export function BookingShell() {
                     </div>
                     <div className="rounded-xl bg-white p-3">
                       <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">GCash Number</p>
-                      <p className="mt-1 font-mono text-lg font-bold text-slate-900">0917-123-4567</p>
+                      <p className="mt-1 font-mono text-lg font-bold text-slate-900">0917-105-8580</p>
                     </div>
                     <div className="rounded-xl bg-white p-3">
                       <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Account Name</p>
-                      <p className="mt-1 font-medium text-slate-900">Hideout Pickleball Club</p>
+                      <p className="mt-1 font-medium text-slate-900">Hideout Court and Cafe</p>
                     </div>
                     <div className="rounded-xl bg-white p-3">
                       <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Step-by-Step Guide</p>
                       <ol className="mt-2 list-inside list-decimal space-y-1">
                         <li>Open your GCash app.</li>
-                        <li>Tap Send Money and enter 0917-123-4567.</li>
+                        <li>Tap Send Money and enter 0917-105-8580.</li>
                         <li>Enter the exact amount: P{paymentDetails?.total}.</li>
                         <li>Add a note: Booking - {playerName}.</li>
                         <li>Confirm and complete the payment.</li>
@@ -1094,30 +1126,32 @@ export function BookingShell() {
                           body: formData,
                         });
 
-                        const uploadPayload = (await uploadResponse.json()) as { url?: string; message?: string };
-                        if (!uploadResponse.ok) {
-                          throw new Error(uploadPayload.message || "Failed to upload receipt.");
-                        }
-
-                        const patchResponse = await fetch("/api/bookings", {
-                          method: "PATCH",
-                          headers: {
-                            "Content-Type": "application/json",
-                          },
-                          body: JSON.stringify({
-                            id: paymentStep.bookingId,
-                            status: "booked",
-                            payment_receipt_url: uploadPayload.url,
-                          }),
-                        });
-
-                         const patchPayload = (await patchResponse.json()) as { message?: string; details?: string };
-                         if (!patchResponse.ok) {
-                           const details = patchPayload.details || patchPayload.message || "Failed to confirm booking.";
-                           throw new Error(details);
+                         const uploadPayload = (await uploadResponse.json()) as { url?: string; message?: string };
+                         if (!uploadResponse.ok) {
+                           throw new Error(uploadPayload.message || "Failed to upload receipt.");
                          }
 
-                        setPaymentStep(null);
+                         for (const bookingId of paymentStep.bookingIds) {
+                           const patchResponse = await fetch("/api/bookings", {
+                             method: "PATCH",
+                             headers: {
+                               "Content-Type": "application/json",
+                             },
+                              body: JSON.stringify({
+                                id: bookingId,
+                                status: "pending",
+                                payment_receipt_url: uploadPayload.url,
+                              }),
+                           });
+
+                           const patchPayload = (await patchResponse.json()) as { message?: string; details?: string };
+                           if (!patchResponse.ok) {
+                             const details = patchPayload.details || patchPayload.message || "Failed to confirm booking.";
+                             throw new Error(details);
+                           }
+                         }
+
+                         setPaymentStep(null);
                         setPaymentReceipt(null);
                         setPaymentPreview(null);
                         await fetchAvailability();
@@ -1129,7 +1163,7 @@ export function BookingShell() {
                     }}
                     className="w-full rounded-xl bg-lime-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-lime-600 disabled:cursor-not-allowed disabled:bg-slate-300"
                   >
-                    {paymentUploading ? "Uploading..." : "Upload Receipt & Confirm"}
+                    {paymentUploading ? "Uploading..." : "Upload Receipt"}
                   </button>
                   <button
                     type="button"

@@ -52,7 +52,6 @@ export default function HomePage() {
       <SiteHeader
         logoSrc="/hideoutLogo.png"
         navItems={[
-          { href: "/booking", label: "View Schedule", key: "schedule" },
           { href: "/booking", label: "Book a Court", primary: true, key: "book" },
         ]}
       />
@@ -79,12 +78,6 @@ export default function HomePage() {
                       className="rounded-full bg-blue-500 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-400 min-h-[44px] flex items-center justify-center"
                     >
                       Book a Court
-                    </Link>
-                    <Link
-                      href="/booking"
-                      className="rounded-full border border-white/30 bg-white/10 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-white/20 min-h-[44px] flex items-center justify-center"
-                    >
-                      View Schedule
                     </Link>
                   </div>
                 </div>
@@ -147,7 +140,7 @@ export default function HomePage() {
 
       <footer className="border-t border-slate-200 bg-white/80">
         <div className="section-shell flex flex-col gap-2 py-6 sm:py-8 text-sm text-slate-600 sm:flex-row sm:items-center sm:justify-between">
-          <p>Hideout Pickleball Club</p>
+          <p>Hideout Court and Cafe</p>
           <p>Contact: hello@hideoutpickleball.club</p>
         </div>
       </footer>

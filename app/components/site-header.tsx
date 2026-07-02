@@ -18,7 +18,7 @@ type SiteHeaderProps = {
   navItems?: NavItem[];
 };
 
-const defaultBrandLabel = "Hideout Pickleball";
+const defaultBrandLabel = "Hideout Court and Cafe";
 
 export function SiteHeader({ brandHref = "/", brandLabel = defaultBrandLabel, logoSrc = "/hideoutLogo.png", navItems = [] }: SiteHeaderProps) {
   const [mobileOpen, setMobileOpen] = useState(false);

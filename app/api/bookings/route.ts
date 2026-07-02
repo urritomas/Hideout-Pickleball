@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
   const bookingsQuery = supabase
     .from("bookings")
     .select("id,court_id,start_at,end_at,status,player_name,total_price,player_email,player_phone")
-    .in("status", ["pending", "confirmed", "cancelled"])
+    .in("status", ["pending", "confirmed", "booked", "cancelled"])
     .order("start_at");
   const blockedQuery = supabase.from("blocked_schedules").select("id,court_id,start_at,end_at,reason").order("start_at");
 
@@ -88,8 +88,13 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: "Booking exceeds operating hours." }, { status: 400 });
   }
 
-  const startAt = `${payload.date}T${String(payload.startHour).padStart(2, "0")}:00:00`;
-  const endAt = `${payload.date}T${String(payload.startHour + payload.durationHours).padStart(2, "0")}:00:00`;
+  const startDate = new Date(`${payload.date}T00:00:00`);
+  startDate.setHours(payload.startHour, 0, 0, 0);
+  const startAt = startDate.toISOString();
+
+  const endDate = new Date(`${payload.date}T00:00:00`);
+  endDate.setHours(payload.startHour + payload.durationHours, 0, 0, 0);
+  const endAt = endDate.toISOString();
 
   const now = new Date();
   if (new Date(startAt) < now) {
@@ -103,7 +108,7 @@ export async function POST(request: Request) {
     .from("bookings")
     .select("id")
     .eq("court_id", payload.courtId)
-    .in("status", ["pending", "confirmed"])
+    .in("status", ["pending", "confirmed", "booked"])
     .lt("start_at", endAt)
     .gt("end_at", startAt)
     .limit(1)

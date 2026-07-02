@@ -63,7 +63,7 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ message: "Booking ID is required." }, { status: 400 });
     }
 
-    const validStatuses = ["pending", "confirmed", "cancelled"];
+    const validStatuses = ["pending", "confirmed", "booked", "cancelled"];
     if (payload.status && !validStatuses.includes(payload.status)) {
       return NextResponse.json(
         { message: `Invalid status. Must be one of: ${validStatuses.join(", ")}` },

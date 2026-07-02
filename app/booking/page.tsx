@@ -13,7 +13,6 @@ export default function BookingPage() {
       <SiteHeader
         navItems={[
           { href: "/", label: "Home", key: "home" },
-          { href: "/booking", label: "View Schedule", key: "schedule" },
           { href: "/booking", label: "Book a Court", primary: true, key: "book" },
         ]}
       />

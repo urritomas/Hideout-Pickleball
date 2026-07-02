@@ -90,6 +90,40 @@ export default function HomePage() {
           </div>
         </section>
 
+        {/* Reclub Section */}
+        <section className="w-full py-12 sm:py-16 px-4 sm:px-6 max-w-7xl mx-auto">
+          <FadeIn>
+            <div className="rounded-2xl sm:rounded-3xl border border-blue-100 bg-white p-6 sm:p-8 shadow-sm">
+              <div className="flex flex-col lg:flex-row items-center gap-6 lg:gap-8">
+                <div className="flex-1 text-center lg:text-left">
+                  <img
+                    src="/reclublogo.png"
+                    alt="Reclub Logo"
+                    className="h-16 w-auto mb-4 mx-auto lg:mx-0"
+                  />
+                  <h2 className="font-display text-2xl sm:text-3xl font-semibold text-slate-900 mb-3">Join our reclub</h2>
+                  <p className="text-sm sm:text-base text-slate-600 mb-4">
+                    Become part of our exclusive pickleball community. Get priority booking, special discounts, and exclusive event invitations.
+                  </p>
+                  <Link
+                    href="https://reclub.co/clubs/@hideout"
+                    className="inline-block rounded-full bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-blue-500 shadow-lg shadow-blue-600/30 min-h-[44px] flex items-center justify-center"
+                  >
+                    Join our reclub
+                  </Link>
+                </div>
+                <div className="flex-1 flex justify-center">
+                  <img
+                    src="/reclubqr.jpg"
+                    alt="Reclub QR Code"
+                    className="h-48 w-48 sm:h-56 sm:w-56 rounded-2xl object-cover shadow-xl border-4 border-blue-100"
+                  />
+                </div>
+              </div>
+            </div>
+          </FadeIn>
+        </section>
+
         <section className="w-full py-12 sm:py-16 px-4 sm:px-6 max-w-7xl mx-auto" id="pricing">
           <Stagger className="grid gap-4 sm:grid-cols-2">
             {pricing.map((item) => (

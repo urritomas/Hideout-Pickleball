@@ -15,12 +15,22 @@ export default function LoricoLoginPage() {
     setIsLoading(true);
     setError("");
 
-    if (username === "jjthecoffeemaker" && password === "honoluluj2cr") {
-      // Set a session cookie (7 days expiration)
-      document.cookie = "isLoggedIn=true; path=/; max-age=" + 60 * 60 * 24 * 7;
-      router.push("/dashboard");
-    } else {
-      setError("Invalid username or password");
+    try {
+      const response = await fetch("/api/auth/lorico/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+      });
+
+      if (response.ok) {
+        router.push("/dashboard");
+        router.refresh();
+      } else {
+        const data = await response.json();
+        setError(data.message || "Invalid username or password");
+      }
+    } catch {
+      setError("Something went wrong");
     }
 
     setIsLoading(false);

@@ -58,6 +58,7 @@ export async function GET(request: NextRequest) {
     }
 
     const dailyRevenueMap = new Map<string, DailyRevenue>();
+    let serviceFeeTotal = 0;
 
     for (const booking of bookingsResult.data || []) {
       const date = booking.created_at.split("T")[0];
@@ -72,6 +73,8 @@ export async function GET(request: NextRequest) {
           bookings_count: 1,
         });
       }
+      // Service fee is 10% of booking price by default (adjust as needed)
+      serviceFeeTotal += Number(booking.total_price || 0) * 0.1;
     }
 
     const dailyRevenue = Array.from(dailyRevenueMap.values()).sort((a, b) =>
@@ -108,6 +111,7 @@ export async function GET(request: NextRequest) {
         totalRevenue,
         totalBookings,
         averageBookingValue: Math.round(averageBookingValue * 100) / 100,
+        serviceFeeTotal: Math.round(serviceFeeTotal * 100) / 100,
         paymentMethodBreakdown,
       },
     });

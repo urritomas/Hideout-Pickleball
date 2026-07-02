@@ -1,7 +1,9 @@
+"use client";
+
 import Link from "next/link";
 import { SiteHeader } from "@/app/components/site-header";
 import { FadeIn, Stagger } from "@/components/shared/motion";
-
+import { useState, useEffect } from "react";
 
 const pricing = [
   {
@@ -32,6 +34,16 @@ const faqs = [
 ];
 
 export default function HomePage() {
+  const [currentImage, setCurrentImage] = useState(0);
+  const images = ["/hideoutbanner.jpg", "/hideoutLogo.png"];
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentImage((prev) => (prev + 1) % images.length);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <>
       <SiteHeader
@@ -42,38 +54,41 @@ export default function HomePage() {
       />
 
       <main className="flex-1">
-        <FadeIn>
-          <section className="relative w-full overflow-hidden">
-            <div className="relative h-screen min-h-[400px] max-h-[95vh] sm:min-h-[450px] sm:max-h-[vh] lg:min-h-[500px] lg:max-h-[95vh]">
+        <section className="relative w-full overflow-hidden">
+          <div className="relative h-screen min-h-[400px] max-h-[95vh] sm:min-h-[450px] lg:min-h-[500px]">
+            {images.map((img, index) => (
               <div
-                className="absolute inset-0 bg-cover bg-center"
+                key={img}
+                className={`absolute inset-0 bg-cover bg-center transition-opacity duration-1000 ${
+                  index === currentImage ? "opacity-100" : "opacity-0"
+                }`}
                 style={{
-                  backgroundImage: "url('/hideoutbanner.jpg')",
+                  backgroundImage: `url('${img}')`,
                 }}
               />
-              <div className="absolute inset-0 bg-gradient-to-r from-slate-900/90 via-gray to-white-900/60" />
-              <div className="relative z-10 flex h-full flex-col items-center justify-center px-4 text-center sm:px-6 md:px-8 lg:px-12">
-                <p className="inline-flex rounded-full border border-blue-200/40 bg-blue-600/30 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-blue-100 mb-3 sm:mb-4">
-                  Your Home for Pickleball.
-                </p>
-                <h1 className="font-display text-2xl font-semibold text-white leading-tight sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl max-w-3xl mx-auto">
-                  Outdoor pickleball booking reimagined for speed and clarity.
-                </h1>
-                <p className="mt-3 sm:mt-4 text-sm text-blue-200/90 sm:text-base md:text-lg max-w-2xl mx-auto">
-                  Reserve one of two outdoor courts in seconds with live availability, transparent pricing, and instant confirmation.
-                </p>
-                <div className="mt-5 sm:mt-6 flex flex-wrap gap-3 justify-center">
-                  <Link
-                    href="/booking"
-                    className="rounded-full bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition-all hover:bg-blue-500 shadow-lg shadow-blue-600/30 min-h-[44px] flex items-center justify-center"
-                  >
-                    Book a Court
-                  </Link>
-                </div>
+            ))}
+            <div className="absolute inset-0 bg-gradient-to-r from-slate-900/90 via-gray to-gray-900/60" />
+            <div className="relative z-10 flex h-full flex-col items-center justify-center px-4 text-center sm:px-6 md:px-8 lg:px-12">
+              <p className="inline-flex rounded-full border border-blue-200/40 bg-blue-600/30 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-blue-100 mb-3 sm:mb-4">
+                Your Home for Pickleball.
+              </p>
+              <h1 className="font-display text-2xl font-semibold text-white leading-tight sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl max-w-3xl mx-auto">
+                Outdoor pickleball booking reimagined for speed and clarity.
+              </h1>
+              <p className="mt-3 sm:mt-4 text-sm text-blue-200/90 sm:text-base md:text-lg max-w-2xl mx-auto">
+                Reserve one of two outdoor courts in seconds with live availability, transparent pricing, and instant confirmation.
+              </p>
+              <div className="mt-5 sm:mt-6 flex flex-wrap gap-3 justify-center">
+                <Link
+                  href="/booking"
+                  className="rounded-full bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition-all hover:bg-blue-500 shadow-lg shadow-blue-600/30 min-h-[44px] flex items-center justify-center"
+                >
+                  Book a Court
+                </Link>
               </div>
             </div>
-          </section>
-        </FadeIn>
+          </div>
+        </section>
 
         <section className="w-full py-12 sm:py-16 px-4 sm:px-6 max-w-7xl mx-auto" id="pricing">
           <Stagger className="grid gap-4 sm:grid-cols-2">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 type DailyRevenue = {
   date: string;
@@ -19,6 +19,7 @@ type RevenueData = {
   totalRevenue: number;
   totalBookings: number;
   averageBookingValue: number;
+  serviceFeeTotal: number;
   paymentMethodBreakdown: PaymentMethodBreakdown[];
 };
 
@@ -65,7 +66,7 @@ export default function DashboardRevenuePage() {
   }, [startDate, endDate]);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+    // eslint-disable-next-line react-hooks/setState-in-effect
     fetchRevenue();
   }, [fetchRevenue]);
 
@@ -86,54 +87,61 @@ export default function DashboardRevenuePage() {
   }
 
   return (
-    <div className="rounded-2xl sm:rounded-3xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm">
-      <h1 className="font-display text-xl sm:text-2xl font-semibold text-slate-900">Revenue</h1>
-      <p className="mt-1 text-xs sm:text-sm text-slate-600">Track hourly earnings and compare date ranges.</p>
+    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6">
+      <h1 className="font-display text-xl sm:text-2xl font-semibold text-slate-900 mb-4">Revenue</h1>
 
-      <div className="mt-4 flex flex-col sm:flex-row gap-3">
-        <div>
-          <label className="text-xs font-medium text-slate-500">Start Date</label>
-          <input
-            type="date"
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-            className="mt-1 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 outline-none ring-blue-200 focus:ring-2 min-h-[44px]"
-          />
+      <div className="rounded-2xl sm:rounded-3xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm">
+        <p className="text-xs sm:text-sm text-slate-600">Track hourly earnings and compare date ranges.</p>
+
+        <div className="mt-4 flex flex-col sm:flex-row gap-3">
+          <div>
+            <label className="text-xs font-medium text-slate-500">Start Date</label>
+            <input
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              className="mt-1 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 outline-none ring-blue-200 focus:ring-2 min-h-[44px]"
+            />
+          </div>
+          <div>
+            <label className="text-xs font-medium text-slate-500">End Date</label>
+            <input
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              className="mt-1 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 outline-none ring-blue-200 focus:ring-2 min-h-[44px]"
+            />
+          </div>
+          <button
+            onClick={fetchRevenue}
+            className="self-end rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-500 min-h-[44px]"
+          >
+            Apply
+          </button>
         </div>
-        <div>
-          <label className="text-xs font-medium text-slate-500">End Date</label>
-          <input
-            type="date"
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
-            className="mt-1 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 outline-none ring-blue-200 focus:ring-2 min-h-[44px]"
-          />
+
+        <div className="mt-4 sm:mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+            <p className="text-xs text-slate-500">Total Revenue</p>
+            <p className="mt-1 font-display text-xl font-semibold text-slate-900">{formatCurrency(data.totalRevenue)}</p>
+          </div>
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+            <p className="text-xs text-slate-500">Service Fee Total</p>
+            <p className="mt-1 font-display text-xl font-semibold text-rose-600">{formatCurrency(data.serviceFeeTotal)}</p>
+          </div>
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+            <p className="text-xs text-slate-500">Total Bookings</p>
+            <p className="mt-1 font-display text-xl font-semibold text-slate-900">{data.totalBookings}</p>
+          </div>
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+            <p className="text-xs text-slate-500">Average Booking</p>
+            <p className="mt-1 font-display text-xl font-semibold text-slate-900">{formatCurrency(data.averageBookingValue)}</p>
+          </div>
         </div>
-        <button
-          onClick={fetchRevenue}
-          className="self-end rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-500 min-h-[44px]"
-        >
-          Apply
-        </button>
       </div>
 
-      <div className="mt-4 sm:mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-          <p className="text-xs text-slate-500">Total Revenue</p>
-          <p className="mt-1 font-display text-xl font-semibold text-slate-900">{formatCurrency(data.totalRevenue)}</p>
-        </div>
-        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-          <p className="text-xs text-slate-500">Total Bookings</p>
-          <p className="mt-1 font-display text-xl font-semibold text-slate-900">{data.totalBookings}</p>
-        </div>
-        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-          <p className="text-xs text-slate-500">Average Booking</p>
-          <p className="mt-1 font-display text-xl font-semibold text-slate-900">{formatCurrency(data.averageBookingValue)}</p>
-        </div>
-      </div>
-
-      <div className="mt-4 sm:mt-6 grid gap-4 grid-cols-1 lg:grid-cols-2">
-        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+      <div className="mt-6 grid gap-4 grid-cols-1 lg:grid-cols-2">
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm">
           <h3 className="font-display text-base sm:text-lg font-semibold text-slate-900">Daily Revenue</h3>
           {data.dailyRevenue.length === 0 ? (
             <p className="mt-4 text-sm text-slate-500">No revenue data for this period.</p>
@@ -162,8 +170,6 @@ export default function DashboardRevenuePage() {
             </div>
           )}
         </div>
-
-        
       </div>
     </div>
   );

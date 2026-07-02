@@ -308,9 +308,10 @@ export function BookingShell() {
       rateLabel: "-",
     };
     }
-
+    
     let totalSubtotal = 0;
     let totalDuration = 0;
+    let totalServiceFee = 0;
     const breakdown: Array<{ name: string; startHour: number; endHour: number; subtotal: number; hours: number[] }> = [];
 
     for (const slot of selectedSlots) {
@@ -319,6 +320,8 @@ export function BookingShell() {
       const end = ordered[ordered.length - 1] + 1;
       const subtotal = ordered.reduce((total, hour) => total + getRateForHour(hour), 0);
       const name = courts.find((court) => court.id === slot.courtId)?.name ?? "-";
+      const serviceFee = ordered.length * 20;
+      totalServiceFee += serviceFee;
       breakdown.push({ name, startHour: start, endHour: end, subtotal, hours: ordered });
       totalSubtotal += subtotal;
       totalDuration += ordered.length;
@@ -333,15 +336,13 @@ export function BookingShell() {
       .filter(Boolean)
       .join(" + ");
 
-    const serviceFee = 20;
-
     return {
       selectedTimeText: breakdown.map((c) => `${c.name} ${formatHour(c.startHour)}-${formatHour(c.endHour)}`).join(", "),
       courts: breakdown,
       duration: totalDuration,
       subtotal: totalSubtotal,
-      serviceFee,
-      total: totalSubtotal + serviceFee,
+      serviceFee: totalServiceFee,
+      total: totalSubtotal + totalServiceFee,
       rateLabel,
     };
   }, [courts, selectedSlots]);

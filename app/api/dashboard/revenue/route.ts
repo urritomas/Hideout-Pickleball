@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
     const [bookingsResult, paymentsResult] = await Promise.all([
       supabase
         .from("bookings")
-        .select("total_price,created_at,payment_receipt_url")
+        .select("total_price,start_at,end_at,created_at,payment_receipt_url")
         .eq("status", "confirmed")
         .gte("start_at", dateStart)
         .lte("start_at", dateEnd),
@@ -63,18 +63,22 @@ export async function GET(request: NextRequest) {
     for (const booking of bookingsResult.data || []) {
       const date = booking.created_at.split("T")[0];
       const existing = dailyRevenueMap.get(date);
+      // Calculate duration in hours from start_at and end_at
+      const startHour = new Date(booking.start_at || booking.created_at).getHours();
+      const endHour = new Date(booking.end_at || booking.created_at).getHours();
+      const duration = Math.max(1, endHour - startHour);
+      const serviceFee = duration * 20;
       if (existing) {
-        existing.revenue += Number(booking.total_price);
+        existing.revenue += Number(booking.total_price || 0);
         existing.bookings_count += 1;
       } else {
         dailyRevenueMap.set(date, {
           date,
-          revenue: Number(booking.total_price),
+          revenue: Number(booking.total_price || 0),
           bookings_count: 1,
         });
       }
-      // Service fee is 10% of booking price by default (adjust as needed)
-      serviceFeeTotal += Number(booking.total_price || 0) * 0.1;
+      serviceFeeTotal += serviceFee;
     }
 
     const dailyRevenue = Array.from(dailyRevenueMap.values()).sort((a, b) =>

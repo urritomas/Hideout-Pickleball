@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { QRCodeCanvas } from "qrcode.react";
+import Image from "next/image";
 import { SiteHeader } from "@/app/components/site-header";
 
 type SlotStatus = "available" | "unavailable" | "selected" | "blocked" | "pending" | "booked";
@@ -444,6 +445,13 @@ export function BookingShell() {
             <div className="p-6">
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
+                  <Image
+                    src="/hideoutLogo.png"
+                    alt="Hideout Pickleball"
+                    width={120}
+                    height={60}
+                    className="h-12 w-auto mb-2"
+                  />
                   <h1 className="font-display text-3xl font-semibold text-slate-900">{clubDetails.name}</h1>
                   <p className="text-sm text-slate-600">{clubDetails.location}</p>
                 </div>

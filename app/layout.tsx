@@ -22,7 +22,7 @@ export const metadata: Metadata = {
   },
   description: "Your Home for Pickleball. Reserve one of our two indoor courts in seconds.",
   icons: {
-    icon: "/hideout.png",
+    icon: "/hideoutLogo.png",
   },
   openGraph: {
     title: "Hideout Pickleball Club",

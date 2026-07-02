@@ -114,7 +114,7 @@ export default function AdminConfirmationPage() {
   return (
     <div className="space-y-6">
       <header className="overflow-hidden rounded-2xl sm:rounded-3xl border border-blue-100 bg-slate-900 p-5 sm:p-6 shadow-sm">
-        <h1 className="font-display text-2xl sm:text-3xl font-semibold text-slate-900">Admin Confirmation</h1>
+        <h1 className="font-display text-2xl sm:text-3xl font-semibold text-white">Admin Confirmation</h1>
         <p className="mt-1 text-xs sm:text-sm text-slate-300">
           Review pending bookings, verify payment receipts, and confirm reservations.
         </p>

@@ -67,7 +67,7 @@ export default function HomePage() {
                 }}
               />
             ))}
-            <div className="absolute inset-0 bg-gradient-to-r from-slate-900/90 via-gray to-gray-900/60" />
+            <div className="absolute inset-0 bg-gradient-to-r from-slate-900/90 via-slate-800/80 to-blue-900/60" />
             <div className="relative z-10 flex h-full flex-col items-center justify-center px-4 text-center sm:px-6 md:px-8 lg:px-12">
               <p className="inline-flex rounded-full border border-blue-200/40 bg-blue-600/30 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-blue-100 mb-3 sm:mb-4">
                 Your Home for Pickleball.

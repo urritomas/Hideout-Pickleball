@@ -21,6 +21,9 @@ export const metadata: Metadata = {
     template: "%s | Hideout Pickleball Club",
   },
   description: "Your Home for Pickleball. Reserve one of our two indoor courts in seconds.",
+  icons: {
+    icon: "/hideout.png",
+  },
   openGraph: {
     title: "Hideout Pickleball Club",
     description: "Your Home for Pickleball.",

@@ -6,7 +6,7 @@ import Link from "next/link";
 import { QRCodeCanvas } from "qrcode.react";
 import { SiteHeader } from "@/app/components/site-header";
 
-type SlotStatus = "available" | "booked" | "selected" | "blocked" | "pending";
+type SlotStatus = "available" | "unavailable" | "selected" | "blocked" | "pending" | "booked";
 
 type Court = {
   id: number;
@@ -229,7 +229,7 @@ export function BookingShell() {
         isToday && (hour < now.getHours() || (hour === now.getHours() && now.getMinutes() > 0));
 
       if (isPast) {
-        return "booked";
+        return "unavailable";
       }
 
       const blocked = blockedSchedules.find(
@@ -247,9 +247,6 @@ export function BookingShell() {
       );
 
       if (!booking) {
-        if (!rowDate) {
-          return "available";
-        }
         return "available";
       }
 
@@ -428,8 +425,8 @@ export function BookingShell() {
     <div className="min-h-screen">
       
 
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
-        <div className="grid gap-6 xl:grid-cols-[0.7fr_1.3fr]">
+      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
+        <div className="grid gap-6 grid-cols-1 xl:grid-cols-[0.7fr_1.3fr]">
         <motion.section
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
@@ -518,7 +515,7 @@ export function BookingShell() {
                 <h2 className="font-display text-3xl font-semibold text-slate-900">Book a Court</h2>
                 <p className="text-sm text-slate-500">Live availability updated at {liveAvailabilityText}</p>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <button
                   type="button"
                   onClick={() => {
@@ -526,7 +523,7 @@ export function BookingShell() {
                     clearSelection();
                   }}
                   disabled={selectedDate <= today}
-                  className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 disabled:cursor-not-allowed disabled:opacity-40"
+                  className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40 min-h-[44px]"
                 >
                   Previous
                 </button>
@@ -538,7 +535,7 @@ export function BookingShell() {
                     setSelectedDate(event.target.value);
                     clearSelection();
                   }}
-                  className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 outline-none ring-blue-200 focus:ring-2"
+                  className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 outline-none ring-blue-200 focus:ring-2 min-h-[44px]"
                 />
                 <button
                   type="button"
@@ -547,19 +544,22 @@ export function BookingShell() {
                     clearSelection();
                   }}
                   disabled={selectedDate >= shiftDate(today, 30)}
-                  className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+                  className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40 min-h-[44px]"
                 >
                   Next
                 </button>
               </div>
             </div>
 
-            <div className="mt-4 grid gap-2 rounded-2xl bg-slate-50 p-3 text-xs text-slate-600 sm:grid-cols-5">
+            <div className="mt-4 grid grid-cols-2 gap-2 rounded-2xl bg-slate-50 p-3 text-xs text-slate-600 sm:grid-cols-3 lg:grid-cols-6">
               <span className="inline-flex items-center gap-2 rounded-lg bg-white px-2 py-1 font-medium">
                 <i className="h-2 w-2 rounded-full bg-emerald-500" /> Available
               </span>
               <span className="inline-flex items-center gap-2 rounded-lg bg-white px-2 py-1 font-medium">
-                <i className="h-2 w-2 rounded-full bg-slate-400" /> Booked
+                <i className="h-2 w-2 rounded-full bg-slate-400" /> Unavailable
+              </span>
+              <span className="inline-flex items-center gap-2 rounded-lg bg-white px-2 py-1 font-medium">
+                <i className="h-2 w-2 rounded-full bg-indigo-500" /> Booked
               </span>
               <span className="inline-flex items-center gap-2 rounded-lg bg-white px-2 py-1 font-medium">
                 <i className="h-2 w-2 rounded-full bg-blue-600" /> Selected
@@ -576,7 +576,7 @@ export function BookingShell() {
               <p className="mt-3 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">{errorMessage}</p>
             )}
 
-            <div className="mt-4 grid gap-4 xl:grid-cols-[1fr_300px]">
+             <div className="mt-4 grid gap-4 grid-cols-1 xl:grid-cols-[1fr_300px]">
               <div className="overflow-x-auto rounded-2xl border border-slate-200">
                 <div className="max-h-[65vh] overflow-y-auto">
                   <table className="min-w-full border-collapse text-sm">
@@ -609,14 +609,14 @@ export function BookingShell() {
 
                               return (
                                 <td key={`${court.id}-${hour}`} className="px-3 py-2">
-                                  <button
-                                    type="button"
-                                    disabled={!clickable}
-                                    onClick={() => handleSlotClick(court.id, hour, effectiveStatus)}
-                                    className={`w-full rounded-lg border px-3 py-2 text-xs font-semibold uppercase tracking-wide transition ${statusStyles(effectiveStatus)}`}
-                                  >
-                                    {effectiveStatus}
-                                  </button>
+                                   <button
+                                     type="button"
+                                     disabled={!clickable}
+                                     onClick={() => handleSlotClick(court.id, hour, effectiveStatus)}
+                                     className={`w-full min-h-[44px] rounded-lg border px-3 py-2 text-xs font-semibold uppercase tracking-wide transition ${statusStyles(effectiveStatus)}`}
+                                   >
+                                     {effectiveStatus}
+                                   </button>
                                 </td>
                               );
                             })}
@@ -720,14 +720,14 @@ export function BookingShell() {
                     type="button"
                     onClick={() => canBook && setShowReviewModal(true)}
                     disabled={!canBook}
-                    className="w-full rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-blue-200 disabled:cursor-not-allowed disabled:bg-slate-300"
+                    className="w-full min-h-[44px] rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-blue-200 disabled:cursor-not-allowed disabled:bg-slate-300"
                   >
                     Review & Confirm
                   </button>
                   <button
                     type="button"
                     onClick={clearSelection}
-                    className="w-full rounded-xl border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700"
+                    className="w-full min-h-[44px] rounded-xl border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700"
                   >
                     Clear Selection
                   </button>

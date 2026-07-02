@@ -128,9 +128,9 @@ export default function AdminConfirmationPage() {
         ]}
       />
       <div className="space-y-6">
-        <header className="overflow-hidden rounded-3xl border border-blue-100 bg-slate-900 p-6 text-white shadow-sm">
-          <h1 className="font-display text-3xl font-semibold text-slate-900">Admin Confirmation</h1>
-          <p className="mt-1 text-sm text-slate-300">
+        <header className="overflow-hidden rounded-2xl sm:rounded-3xl border border-blue-100 bg-slate-900 p-5 sm:p-6 text-white shadow-sm">
+          <h1 className="font-display text-2xl sm:text-3xl font-semibold text-slate-900">Admin Confirmation</h1>
+          <p className="mt-1 text-xs sm:text-sm text-slate-300">
             Review pending bookings, verify payment receipts, and confirm reservations.
           </p>
         </header>
@@ -158,25 +158,25 @@ export default function AdminConfirmationPage() {
             }).format(startDate);
 
             return (
-              <article key={booking.id} className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-                <div className="flex flex-wrap items-start justify-between gap-4">
+              <article key={booking.id} className="rounded-2xl sm:rounded-3xl border border-slate-200 bg-white p-4 sm:p-5 shadow-sm">
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                   <div className="space-y-1">
-                    <h3 className="font-display text-lg font-semibold text-slate-900">
+                    <h3 className="font-display text-base sm:text-lg font-semibold text-slate-900">
                       {courtName(booking.court_id)}
                     </h3>
-                    <p className="text-sm text-slate-600">{dateLabel}</p>
-                    <p className="text-sm text-slate-600">
+                    <p className="text-xs sm:text-sm text-slate-600">{dateLabel}</p>
+                    <p className="text-xs sm:text-sm text-slate-600">
                       {formatHour(startHour)} - {formatHour(endHour)}
                     </p>
-                    <p className="text-sm text-slate-600">Player: {booking.player_name}</p>
-                    <p className="text-sm text-slate-600">Email: {booking.player_email}</p>
+                    <p className="text-xs sm:text-sm text-slate-600">Player: {booking.player_name}</p>
+                    <p className="text-xs sm:text-sm text-slate-600">Email: {booking.player_email}</p>
                     {booking.player_phone && (
-                      <p className="text-sm text-slate-600">Phone: {booking.player_phone}</p>
+                      <p className="text-xs sm:text-sm text-slate-600">Phone: {booking.player_phone}</p>
                     )}
-                    <p className="text-sm font-semibold text-blue-700">Total: {formatPrice(booking.total_price)}</p>
+                    <p className="text-xs sm:text-sm font-semibold text-blue-700">Total: {formatPrice(booking.total_price)}</p>
                   </div>
 
-                  <div className="flex flex-col items-end gap-3">
+                  <div className="flex flex-col items-start sm:items-end gap-3">
                     <span className="inline-flex rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-amber-700">
                       Pending
                     </span>
@@ -190,14 +190,14 @@ export default function AdminConfirmationPage() {
                         View Receipt
                       </a>
                     )}
-                    <button
-                      type="button"
-                      onClick={() => confirmBooking(booking.id)}
-                      disabled={processingId === booking.id}
-                      className="rounded-xl bg-lime-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-lime-600 disabled:cursor-not-allowed disabled:bg-slate-300"
-                    >
-                      {processingId === booking.id ? "Confirming..." : "Confirm Payment"}
-                    </button>
+                     <button
+                       type="button"
+                       onClick={() => confirmBooking(booking.id)}
+                       disabled={processingId === booking.id}
+                       className="min-h-[44px] rounded-xl bg-lime-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-lime-600 disabled:cursor-not-allowed disabled:bg-slate-300"
+                     >
+                       {processingId === booking.id ? "Confirming..." : "Confirm Payment"}
+                     </button>
                   </div>
                 </div>
               </article>

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 const links = [
   { href: "/", label: "Home" },
@@ -22,6 +23,17 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }>) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const router = useRouter();
+
+  const handleSignOut = async () => {
+    try {
+      await fetch("/api/auth/lorico/logout", { method: "POST" });
+      router.push("/loricoLogin");
+      router.refresh();
+    } catch (error) {
+      console.error("Failed to sign out:", error);
+    }
+  };
 
   return (
     <main className="section-shell">
@@ -79,6 +91,13 @@ export default function DashboardLayout({
                   {item.label}
                 </Link>
               ))}
+              <button
+                type="button"
+                onClick={handleSignOut}
+                className="w-full text-left rounded-xl px-3 py-2 text-sm font-medium text-rose-700 transition hover:bg-rose-50 min-h-[44px] flex items-center"
+              >
+                Sign Out
+              </button>
             </nav>
           </div>
         </div>
@@ -97,6 +116,13 @@ export default function DashboardLayout({
                 {item.label}
               </Link>
             ))}
+            <button
+              type="button"
+              onClick={handleSignOut}
+              className="w-full text-left rounded-xl px-3 py-2 text-sm font-medium text-rose-700 transition hover:bg-rose-50 min-h-[44px] flex items-center"
+            >
+              Sign Out
+            </button>
           </nav>
         </aside>
 

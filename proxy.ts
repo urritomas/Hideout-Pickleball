@@ -1,24 +1,30 @@
 import { updateSession } from "@/utils/supabase/middleware";
+import { getSessionCookieName, verifyAdminSessionToken } from "@/utils/auth/admin-session";
 import { type NextRequest, NextResponse } from "next/server";
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Protect dashboard routes
-  if (pathname.startsWith("/dashboard")) {
-    const isLoggedIn = request.cookies.get("isLoggedIn")?.value === "true";
+  const isAdminArea = pathname.startsWith("/dashboard")
+    || pathname.startsWith("/api/dashboard")
+    || pathname.startsWith("/api/admin")
+    || pathname.startsWith("/api/settings")
+    || pathname.startsWith("/api/payments")
+    || pathname === "/api/users"
+    || pathname === "/api/courts";
 
-    if (!isLoggedIn) {
+  if (isAdminArea && !(await verifyAdminSessionToken(request.cookies.get(getSessionCookieName())?.value))) {
+    if (pathname.startsWith("/api/")) {
+      return NextResponse.json({ message: "Authentication required." }, { status: 401 });
+    }
+
       const loginUrl = new URL("/loricoLogin", request.url);
       return NextResponse.redirect(loginUrl);
-    }
   }
 
   // Redirect logged-in users away from login page
   if (pathname === "/loricoLogin") {
-    const isLoggedIn = request.cookies.get("isLoggedIn")?.value === "true";
-
-    if (isLoggedIn) {
+    if (await verifyAdminSessionToken(request.cookies.get(getSessionCookieName())?.value)) {
       const dashboardUrl = new URL("/dashboard", request.url);
       return NextResponse.redirect(dashboardUrl);
     }

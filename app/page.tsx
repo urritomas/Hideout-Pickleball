@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { SiteHeader } from "@/app/components/site-header";
+import { SiteFooter } from "@/app/components/site-footer";
 import { FadeIn, Stagger } from "@/components/shared/motion";
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
@@ -27,7 +28,7 @@ const faqs = [
   },
   {
     q: "Can I cancel my booking?",
-    a: "Yes. You can cancel from your profile bookings page and policy settings will apply.",
+    a: "Hideout does not offer refunds. Contact support before your booking starts to request a reschedule, subject to venue approval and availability.",
   },
   {
     q: "How many courts does Hideout have?",
@@ -70,7 +71,7 @@ export default function HomePage() {
             <div className="relative z-10 max-w-2xl">
               <p className="mb-5 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.22em] text-[#c9d92d]"><span className="h-2 w-2 rounded-full bg-[#c9d92d]" /> Davao City / Philippines</p>
               <h1 className="max-w-xl font-display text-5xl font-semibold leading-[0.96] tracking-[-0.04em] sm:text-6xl lg:text-7xl">Your home court, <span className="text-[#c9d92d]">ready when you are.</span></h1>
-              <p className="mt-7 max-w-lg text-base leading-7 text-[#d5d2c5] sm:text-lg">Two indoor courts. Clear pricing. A better way to get your next rally on the calendar.</p>
+              <p className="mt-7 max-w-lg text-base leading-7 text-[#d5d2c5] sm:text-lg">Two outdoor courts. Clear pricing. A better way to get your next rally on the calendar.</p>
               <div className="mt-9 flex flex-wrap items-center gap-4">
                 <Link href="/booking" className="inline-flex min-h-[50px] items-center justify-center rounded-lg bg-[#c9d92d] px-6 text-sm font-bold text-[#171812] transition hover:bg-[#d8e94b]">Reserve a court <span className="ml-3 text-lg">&#8594;</span></Link>
                 <a href="#pricing" className="text-sm font-semibold text-[#f1eee3] underline decoration-[#68783b] underline-offset-8 transition hover:text-[#c9d92d]">See rates</a>
@@ -96,7 +97,7 @@ export default function HomePage() {
         {/* Reclub Section */}
         <section className="w-full py-12 sm:py-16 px-4 sm:px-6 max-w-7xl mx-auto">
           <FadeIn>
-            <div className="border border-[#171812]/15 bg-[#e6e3d7] p-6 shadow-sm sm:p-8">
+            <div className="theme-panel border border-[#171812]/15 p-6 shadow-sm sm:p-8">
               <div className="flex flex-col lg:flex-row items-center gap-6 lg:gap-8">
                 <div className="flex-1 text-center lg:text-left">
                   <Image
@@ -192,7 +193,7 @@ export default function HomePage() {
           <Stagger className="grid gap-4 sm:grid-cols-2">
             {pricing.map((item) => (
               <FadeIn key={item.label}>
-                <article className="border border-[#171812]/15 bg-[#f8f6ef] p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-md sm:p-6">
+                <article className="theme-elevated border border-[#171812]/15 p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-md sm:p-6">
                   <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#68783b]">{item.label}</p>
                   <h3 className="mt-2 sm:mt-3 font-display text-2xl sm:text-3xl font-semibold text-[#171812]">{item.price}</h3>
                   <p className="mt-1 text-sm text-slate-600">{item.range}</p>
@@ -209,7 +210,7 @@ export default function HomePage() {
               <p className="mt-1 sm:mt-2 text-sm text-slate-600">Everything you need to know before your first booking.</p>
             </div>
             <FadeIn>
-              <div className="border border-[#171812]/15 bg-[#f8f6ef] p-6 shadow-sm sm:p-8 md:p-10">
+              <div className="theme-elevated border border-[#171812]/15 p-6 shadow-sm sm:p-8 md:p-10">
                 <div className="divide-y divide-slate-200">
                   {faqs.map((item) => (
                     <details key={item.q} className="group py-4 sm:py-5">
@@ -224,12 +225,7 @@ export default function HomePage() {
         </section>
       </main>
 
-      <footer className="w-full border-t border-[#171812]/15 bg-[#171812] text-[#f1eee3]">
-        <div className="flex flex-col gap-2 py-6 sm:py-8 text-sm text-slate-600 sm:flex-row sm:items-center sm:justify-between px-4 sm:px-6 max-w-7xl mx-auto">
-          <p className="font-display font-semibold">Hideout Court and Cafe</p>
-          <p className="text-[#a6a398]">Contact: 0917-105-8580</p>
-        </div>
-      </footer>
+      <SiteFooter />
     </>
   );
 }

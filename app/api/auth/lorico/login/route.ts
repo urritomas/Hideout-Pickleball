@@ -1,17 +1,36 @@
 import { NextRequest, NextResponse } from "next/server";
+import {
+  ADMIN_SESSION_TTL_SECONDS,
+  createAdminSessionToken,
+  getSessionCookieName,
+  hasAdminConfiguration,
+} from "@/utils/auth/admin-session";
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { username, password } = body;
 
-    if (username === "jjthecoffeemaker" && password === "honoluluj2cr") {
-      // Set a cookie in the response
+    if (!hasAdminConfiguration()) {
+      return NextResponse.json(
+        { success: false, message: "Admin login is not configured." },
+        { status: 503 },
+      );
+    }
+
+    if (username === process.env.LORICO_ADMIN_USERNAME && password === process.env.LORICO_ADMIN_PASSWORD) {
+      const token = await createAdminSessionToken();
+      if (!token) {
+        return NextResponse.json({ success: false, message: "Admin login is not configured." }, { status: 503 });
+      }
+
       const response = NextResponse.json({ success: true });
-      response.cookies.set("isLoggedIn", "true", {
+      response.cookies.set(getSessionCookieName(), token, {
         httpOnly: true,
-        maxAge: 60 * 60 * 24 * 7, // 7 days
+        maxAge: ADMIN_SESSION_TTL_SECONDS,
         path: "/",
+        sameSite: "strict",
+        secure: process.env.NODE_ENV === "production",
       });
       return response;
     }

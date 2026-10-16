@@ -167,7 +167,7 @@ export default function AdminConfirmationPage() {
                     </span>
                     {booking.payment_receipt_url && (
                       <a
-                        href={booking.payment_receipt_url}
+                        href={`/api/receipt?path=${encodeURIComponent(booking.payment_receipt_url)}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-sm font-medium text-blue-600 transition hover:text-blue-500"

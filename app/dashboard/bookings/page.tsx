@@ -202,7 +202,7 @@ export default function DashboardBookingsPage() {
                           )}
                           {booking.payment_receipt_url && (
                             <a
-                              href={booking.payment_receipt_url}
+                              href={`/api/receipt?path=${encodeURIComponent(booking.payment_receipt_url)}`}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="rounded-lg border border-blue-200 bg-white px-3 py-1 text-xs font-medium text-blue-700 transition hover:bg-blue-50 min-h-[44px] flex items-center"
@@ -265,7 +265,7 @@ export default function DashboardBookingsPage() {
                     )}
                     {booking.payment_receipt_url && (
                       <a
-                        href={booking.payment_receipt_url}
+                              href={`/api/receipt?path=${encodeURIComponent(booking.payment_receipt_url)}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="rounded-lg border border-blue-200 bg-white px-3 py-2 text-xs font-medium text-blue-700 transition hover:bg-blue-50 min-h-[44px] flex items-center"

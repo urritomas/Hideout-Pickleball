@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { BookingShell } from "./components/booking-shell";
 import { SiteHeader } from "@/app/components/site-header";
+import { SiteFooter } from "@/app/components/site-footer";
 
 export const metadata: Metadata = {
   title: "Book a Court",
@@ -17,6 +18,7 @@ export default function BookingPage() {
         ]}
       />
       <BookingShell />
+      <SiteFooter />
     </>
   );
 }

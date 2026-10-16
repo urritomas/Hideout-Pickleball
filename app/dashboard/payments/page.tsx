@@ -109,7 +109,7 @@ export default function DashboardPaymentsPage() {
         body: formData,
       });
 
-      const uploadPayload = (await uploadResponse.json()) as { url?: string; message?: string };
+      const uploadPayload = (await uploadResponse.json()) as { path?: string; message?: string };
       if (!uploadResponse.ok) {
         throw new Error(uploadPayload.message || "Failed to upload receipt.");
       }
@@ -119,7 +119,7 @@ export default function DashboardPaymentsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           id: bookingId,
-          payment_receipt_url: uploadPayload.url,
+          payment_receipt_url: uploadPayload.path,
         }),
       });
 
@@ -237,7 +237,7 @@ export default function DashboardPaymentsPage() {
                     {booking && booking.payment_receipt_url && (
                       <div>
                         <button
-                          onClick={() => setOverlayUrl(booking.payment_receipt_url || null)}
+                          onClick={() => setOverlayUrl(`/api/receipt?path=${encodeURIComponent(booking.payment_receipt_url || "")}`)}
                           className="text-sm font-medium text-blue-600 transition hover:text-blue-500"
                         >
                           View Receipt

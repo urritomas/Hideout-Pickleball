@@ -44,7 +44,7 @@ const CLOSING_HOUR = 24;
 const MAX_CONSECUTIVE_HOURS = 4;
 const RULES_KEY = "hideout.booking.rules.v1";
 
-const amenities = ["Air-conditioned indoor venue", "Locker shelves", "Shower room", "Drinking water station"];
+const amenities = ["Outdoor pickleball courts", "Locker shelves", "Shower room", "Drinking water station"];
 
 const clubDetails = {
   name: "Hideout Court and Cafe",
@@ -89,27 +89,27 @@ function getRateForHour(hour24: number): number {
 
 function statusStyles(status: SlotStatus): string {
   if (status === "available") {
-    return "border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100";
+    return "slot-available hover:brightness-105";
   }
   if (status === "selected") {
-    return "border-[#c9d92d] bg-[#68783b] text-white shadow-sm";
+    return "slot-selected shadow-sm";
   }
   if (status === "unavailable") {
-    return "cursor-not-allowed border-rose-600 bg-rose-100 text-rose-700";
+    return "slot-unavailable cursor-not-allowed";
   }
   if (status === "open play") {
-    return "cursor-not-allowed border-emerald-600 bg-emerald-100 text-emerald-700";
+    return "slot-open-play cursor-not-allowed";
   }
   if (status === "pending") {
-    return "cursor-not-allowed border-amber-200 bg-amber-50 text-amber-700";
+    return "slot-pending cursor-not-allowed";
   }
   if (status === "booked") {
-    return "cursor-not-allowed border-[#8b6a43] bg-[#eee6d5] text-[#6d4d2e]";
+    return "slot-booked cursor-not-allowed";
   }
   if (status === "cancelled") {
-    return "cursor-not-allowed border-slate-300 bg-slate-100 text-slate-600 line-through";
+    return "slot-cancelled cursor-not-allowed";
   }
-  return "cursor-not-allowed border-slate-200 bg-slate-200 text-slate-600";
+  return "slot-cancelled cursor-not-allowed";
 }
 
 function overlaps(hour: number, startAt: string, endAt: string): boolean {
@@ -320,7 +320,7 @@ export function BookingShell() {
       const end = ordered[ordered.length - 1] + 1;
       const subtotal = ordered.reduce((total, hour) => total + getRateForHour(hour), 0);
       const name = courts.find((court) => court.id === slot.courtId)?.name ?? "-";
-      const serviceFee = ordered.length * 20;
+      const serviceFee = 20;
       totalServiceFee += serviceFee;
       breakdown.push({ name, startHour: start, endHour: end, subtotal, hours: ordered });
       totalSubtotal += subtotal;
@@ -482,22 +482,22 @@ export function BookingShell() {
                 alt="Hideout Pickleball Court logo"
                 fill
                 sizes="(max-width: 1280px) 100vw, 30vw"
-                className="object-contain object-center p-6 sm:p-8"
+                className="booking-logo object-contain object-center p-6 sm:p-8"
               />
             </div>
             <div className="p-6">
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
-                  <h1 className="font-display text-3xl font-semibold text-[#171812]">{clubDetails.name}</h1>
+                  <h1 className="theme-text-primary font-display text-3xl font-semibold">{clubDetails.name}</h1>
                   <p className="text-sm text-slate-600">{clubDetails.location}</p>
                 </div>
-                <div className="rounded-lg bg-[#e6e3d7] px-4 py-2 text-right">
-                  <p className="font-semibold text-[#4d5c2b]">{clubDetails.tagline}</p>
+                <div className="theme-panel rounded-lg px-4 py-2 text-right">
+                  <p className="theme-brand-text font-semibold">{clubDetails.tagline}</p>
                 </div>
               </div>
 
               <p className="mt-4 text-sm leading-relaxed text-slate-700">
-                Reserve indoor sessions in a premium environment designed for focused rallies, coaching, and competitive
+                Reserve outdoor sessions in a premium environment designed for focused rallies, coaching, and competitive
                 games. Choose Court 1 or Court 2 and lock your slots instantly.
               </p>
             </div>
@@ -519,7 +519,7 @@ export function BookingShell() {
                 <span className="font-medium">P300 / hour</span>
               </li>
               <li className="flex justify-between gap-3">
-                <span className="text-slate-500">Indoor Courts</span>
+                <span className="text-slate-500">Outdoor Courts</span>
                 <span className="font-medium">2 Total</span>
               </li>
             </ul>
@@ -542,7 +542,7 @@ export function BookingShell() {
           transition={{ duration: 0.35, delay: 0.08 }}
           className="space-y-5"
         >
-          <article className="border border-[#171812]/15 bg-[#f8f6ef] p-4 shadow-sm sm:p-5">
+          <article className="theme-elevated border border-[#171812]/15 p-4 shadow-sm sm:p-5">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <h2 className="font-display text-3xl font-semibold text-slate-900">Book a Court</h2>
@@ -610,7 +610,7 @@ export function BookingShell() {
             )}
 
              <div className="mt-4 grid gap-4 grid-cols-1 xl:grid-cols-[1fr_300px]">
-              <div className="overflow-x-auto rounded-2xl border border-slate-200">
+              <div className="theme-elevated overflow-x-auto rounded-2xl border border-slate-200">
                 <div className="max-h-[65vh] overflow-y-auto">
                   <table className="min-w-full border-collapse text-sm">
                     <thead className="sticky top-0 z-10 bg-slate-100 text-left text-slate-700">
@@ -632,7 +632,7 @@ export function BookingShell() {
                         </tr>
                       ) : (
                         timeRows.map((hour) => (
-                          <tr key={hour} className="border-t border-slate-200 bg-white even:bg-slate-50/70">
+                          <tr key={hour} className="border-t border-slate-200 bg-transparent even:bg-slate-50/70">
                             <td className="px-3 py-2 font-medium text-slate-700">{formatHour(hour)}</td>
                             {courts.map((court) => {
                               const slotForCourt = selectedSlots.find((slot) => slot.courtId === court.id);
@@ -661,7 +661,7 @@ export function BookingShell() {
                 </div>
               </div>
 
-              <aside className="sticky top-24 h-fit rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+              <aside className="theme-elevated sticky top-24 h-fit rounded-2xl border border-slate-200 p-4 shadow-sm">
                 <h3 className="font-display text-lg font-semibold text-slate-900">Booking Summary</h3>
                 <div className="mt-4 space-y-2 text-sm text-slate-700">
                   <p className="flex justify-between gap-3">
@@ -764,6 +764,9 @@ export function BookingShell() {
                   >
                     Clear Selection
                   </button>
+                  <p className="text-xs leading-5 text-slate-500">
+                    By continuing, you agree to the <Link href="/booking-policy" className="font-semibold text-[#68783b] underline">booking policy</Link> and acknowledge the <Link href="/privacy" className="font-semibold text-[#68783b] underline">privacy policy</Link>. No refunds; reschedule requests must be made before the booking starts.
+                  </p>
                 </div>
               </aside>
             </div>
@@ -822,12 +825,12 @@ export function BookingShell() {
                 </article>
 
                 <article className="rounded-2xl border border-rose-200 bg-rose-50 p-4 sm:col-span-3">
-                  <h3 className="font-semibold text-rose-800">Cancellation and Rescheduling</h3>
+                  <h3 className="font-semibold text-rose-800">Rescheduling and no refunds</h3>
                   <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-slate-700">
-                    <li>Admin approval required.</li>
-                    <li>No refunds after reservation starts.</li>
-                    <li>Reschedule only before the booking time.</li>
-                    <li>No-shows are non-refundable.</li>
+                    <li>Contact support before the booking starts.</li>
+                    <li>Reschedules require venue approval and availability.</li>
+                    <li>No refunds are offered under the current policy.</li>
+                    <li>No-shows and late arrivals do not create a refund entitlement.</li>
                   </ul>
                 </article>
 
@@ -881,12 +884,12 @@ export function BookingShell() {
                 </article>
 
                 <article className="rounded-2xl border border-rose-200 bg-rose-50 p-4 sm:col-span-2">
-                  <h3 className="font-semibold text-rose-800">Cancellation and Rescheduling</h3>
+                  <h3 className="font-semibold text-rose-800">Rescheduling and no refunds</h3>
                   <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-slate-700">
-                    <li>Admin approval required.</li>
-                    <li>No refunds after reservation starts.</li>
-                    <li>Reschedule only before the booking time.</li>
-                    <li>No-shows are non-refundable.</li>
+                    <li>Contact support before the booking starts.</li>
+                    <li>Reschedules require venue approval and availability.</li>
+                    <li>No refunds are offered under the current policy.</li>
+                    <li>No-shows and late arrivals do not create a refund entitlement.</li>
                   </ul>
                 </article>
               </div>
@@ -936,6 +939,7 @@ export function BookingShell() {
                   Proceed to Payment
                 </button>
               </div>
+              <p className="text-xs leading-5 text-slate-500">Payment and rescheduling terms: <Link href="/booking-policy" className="font-semibold text-[#68783b] underline">booking policy</Link>. Privacy: <Link href="/privacy" className="font-semibold text-[#68783b] underline">privacy policy</Link>.</p>
             </div>
           </div>
         </div>
@@ -951,7 +955,7 @@ export function BookingShell() {
                   </p>
                   <h2 className="mt-3 font-display text-3xl font-semibold">Complete Your Reservation</h2>
                   <p className="mt-2 text-sm text-slate-300">
-                    Upload your GCash payment receipt to confirm your booking.
+                    Upload your GCash receipt for staff review. A receipt upload does not automatically confirm payment or mark the booking as paid.
                   </p>
                 </div>
                 <div className="text-right">
@@ -1119,7 +1123,7 @@ export function BookingShell() {
                           body: formData,
                         });
 
-                         const uploadPayload = (await uploadResponse.json()) as { url?: string; message?: string };
+                         const uploadPayload = (await uploadResponse.json()) as { path?: string; message?: string };
                          if (!uploadResponse.ok) {
                            throw new Error(uploadPayload.message || "Failed to upload receipt.");
                          }
@@ -1133,7 +1137,7 @@ export function BookingShell() {
                               body: JSON.stringify({
                                 id: bookingId,
                                 status: "pending",
-                                payment_receipt_url: uploadPayload.url,
+                                payment_receipt_url: uploadPayload.path,
                               }),
                            });
 

@@ -27,7 +27,8 @@ export async function POST(request: NextRequest) {
   const cookieStore = await cookies();
   const supabase = createClient(cookieStore);
 
-  const fileName = `${Date.now()}-${file.name}`;
+  const extension = file.type === "image/jpeg" ? "jpg" : file.type === "image/webp" ? "webp" : "png";
+  const fileName = `${crypto.randomUUID()}.${extension}`;
   const filePath = `receipts/${fileName}`;
 
   const { error } = await supabase.storage.from("receipts").upload(filePath, file, {
@@ -45,7 +46,5 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const { data: publicUrlData } = supabase.storage.from("receipts").getPublicUrl(filePath);
-
-  return NextResponse.json({ url: publicUrlData.publicUrl }, { status: 201 });
+  return NextResponse.json({ path: filePath }, { status: 201 });
 }

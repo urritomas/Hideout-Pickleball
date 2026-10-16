@@ -16,24 +16,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "daily",
       priority: 0.9,
     },
-    {
-      url: `${baseUrl}/login`,
+    ...["privacy", "terms", "booking-policy", "court-rules", "faq", "contact", "cookies"].map((path) => ({
+      url: `${baseUrl}/${path}`,
       lastModified: new Date(),
-      changeFrequency: "monthly",
-      priority: 0.7,
-    },
-    {
-      url: `${baseUrl}/register`,
-      lastModified: new Date(),
-      changeFrequency: "monthly",
-      priority: 0.7,
-    },
-    {
-      url: `${baseUrl}/profile`,
-      lastModified: new Date(),
-      changeFrequency: "weekly",
-      priority: 0.7,
-    },
+      changeFrequency: "monthly" as const,
+      priority: 0.5,
+    })),
     {
       url: `${baseUrl}/dashboard`,
       lastModified: new Date(),

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Manrope, Space_Grotesk } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 
 const manrope = Manrope({
@@ -20,7 +21,7 @@ export const metadata: Metadata = {
     default: "Hideout Pickleball Club",
     template: "%s | Hideout Pickleball Club",
   },
-  description: "Your Home for Pickleball. Reserve one of our two indoor courts in seconds.",
+  description: "Your Home for Pickleball. Reserve one of our two outdoor courts in seconds.",
   icons: {
     icon: "/hideoutLogo.png",
   },
@@ -52,9 +53,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${manrope.variable} ${spaceGrotesk.variable}`}>
-      <body className="min-h-screen bg-slate-50 text-slate-900 antialiased">
-        <div className="relative flex min-h-screen flex-col overflow-x-hidden bg-[radial-gradient(circle_at_top,#dbeafe_0%,#f8fafc_38%,#ffffff_100%)]">
-          <div className="pointer-events-none absolute inset-0 -z-10 bg-[linear-gradient(120deg,rgba(37,99,235,0.08),rgba(96,165,250,0.08),transparent)]" />
+      <Script id="hideout-theme-init" strategy="beforeInteractive">
+        {`(() => { try { const stored = localStorage.getItem("hideout.theme"); const theme = stored === "dark" || stored === "light" ? stored : (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"); document.documentElement.dataset.theme = theme; } catch {} })();`}
+      </Script>
+      <body className="min-h-screen bg-[var(--background)] text-[var(--foreground)] antialiased">
+        <div className="relative flex min-h-screen flex-col overflow-x-hidden bg-[var(--background)]">
           {children}
         </div>
       </body>

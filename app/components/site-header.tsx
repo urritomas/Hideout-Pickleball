@@ -24,11 +24,11 @@ export function SiteHeader({ brandHref = "/", brandLabel = defaultBrandLabel, lo
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-30 border-b border-slate-200/70 bg-white/80 backdrop-blur-xl">
+    <header className="sticky top-0 z-30 border-b border-white/10 bg-[#171812]/95 text-[#f1eee3] backdrop-blur-xl">
       <nav className="section-shell flex h-16 items-center justify-between">
-        <Link href={brandHref} className="flex items-center gap-2 font-display text-lg font-semibold text-slate-900">
-          <Image src={logoSrc} alt="Hideout Pickleball" width={36} height={36} className="h-9 w-auto rounded-lg" />
-          {brandLabel}
+        <Link href={brandHref} className="flex items-center gap-3 font-display text-base font-semibold tracking-tight text-[#f1eee3]">
+          <Image src={logoSrc} alt="Hideout Pickleball" width={36} height={36} className="h-9 w-9 rounded-full object-cover" />
+          <span>{brandLabel}</span>
         </Link>
         <div className="hidden md:flex items-center gap-2 sm:gap-3">
           {navItems.map((item) => (
@@ -37,8 +37,8 @@ export function SiteHeader({ brandHref = "/", brandLabel = defaultBrandLabel, lo
               href={item.href}
               className={
                 item.primary
-                  ? "rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-blue-300/40 transition hover:bg-blue-500 min-h-[44px] min-w-[44px] flex items-center justify-center"
-                  : "rounded-full border border-blue-200 bg-white px-4 py-2 text-sm font-medium text-blue-700 transition hover:bg-blue-50 min-h-[44px] min-w-[44px] flex items-center justify-center"
+                  ? "rounded-lg bg-[#c9d92d] px-4 py-2 text-sm font-bold text-[#171812] shadow-lg shadow-[#c9d92d]/20 transition hover:bg-[#d8e94b] min-h-[44px] min-w-[44px] flex items-center justify-center"
+                  : "rounded-lg border border-white/20 bg-transparent px-4 py-2 text-sm font-medium text-[#f1eee3] transition hover:bg-white/10 min-h-[44px] min-w-[44px] flex items-center justify-center"
               }
             >
               {item.label}
@@ -48,7 +48,7 @@ export function SiteHeader({ brandHref = "/", brandLabel = defaultBrandLabel, lo
         <button
           type="button"
           onClick={() => setMobileOpen((prev) => !prev)}
-          className="md:hidden rounded-xl border border-slate-200 bg-white p-2 text-slate-700 transition hover:bg-slate-50 min-h-[44px] min-w-[44px] flex items-center justify-center"
+          className="md:hidden rounded-lg border border-white/20 bg-transparent p-2 text-[#f1eee3] transition hover:bg-white/10 min-h-[44px] min-w-[44px] flex items-center justify-center"
           aria-label="Toggle navigation menu"
           aria-expanded={mobileOpen}
         >
@@ -69,7 +69,7 @@ export function SiteHeader({ brandHref = "/", brandLabel = defaultBrandLabel, lo
         </button>
       </nav>
       {mobileOpen && (
-        <div className="md:hidden border-t border-slate-200 bg-white/95 backdrop-blur-xl">
+        <div className="md:hidden border-t border-white/10 bg-[#171812] backdrop-blur-xl">
           <div className="section-shell flex flex-col gap-2 py-3">
             {navItems.map((item) => (
               <Link
@@ -78,8 +78,8 @@ export function SiteHeader({ brandHref = "/", brandLabel = defaultBrandLabel, lo
                 onClick={() => setMobileOpen(false)}
                 className={
                   item.primary
-                    ? "rounded-full bg-blue-600 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-300/40 transition hover:bg-blue-500 min-h-[44px] flex items-center justify-center"
-                    : "rounded-full border border-blue-200 bg-white px-4 py-3 text-sm font-medium text-blue-700 transition hover:bg-blue-50 min-h-[44px] flex items-center justify-center"
+                    ? "rounded-lg bg-[#c9d92d] px-4 py-3 text-sm font-bold text-[#171812] shadow-lg shadow-[#c9d92d]/20 transition hover:bg-[#d8e94b] min-h-[44px] flex items-center justify-center"
+                    : "rounded-lg border border-white/20 bg-transparent px-4 py-3 text-sm font-medium text-[#f1eee3] transition hover:bg-white/10 min-h-[44px] flex items-center justify-center"
                 }
               >
                 {item.label}

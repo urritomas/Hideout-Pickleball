@@ -1,13 +1,16 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --background-soft: #f8fafc;
-  --foreground: #0f172a;
-  --primary: #2563eb;
-  --secondary: #0f172a;
-  --accent: #60a5fa;
-  --ring: #93c5fd;
+  --background: #f1eee3;
+  --background-soft: #e6e3d7;
+  --foreground: #171812;
+  --primary: #68783b;
+  --primary-dark: #4d5c2b;
+  --secondary: #171812;
+  --accent: #c9d92d;
+  --ring: #a9b96b;
+  --wood: #8b6a43;
+  --line: rgba(23, 24, 18, 0.14);
 }
 
 @theme inline {
@@ -15,6 +18,7 @@
   --color-background-soft: var(--background-soft);
   --color-foreground: var(--foreground);
   --color-primary: var(--primary);
+  --color-primary-dark: var(--primary-dark);
   --color-secondary: var(--secondary);
   --color-accent: var(--accent);
   --color-ring: var(--ring);
@@ -26,10 +30,13 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-manrope), sans-serif;
+  background-image: linear-gradient(rgba(23, 24, 18, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(23, 24, 18, 0.025) 1px, transparent 1px);
+  background-size: 28px 28px;
 }
 
 * {
-  border-color: #e2e8f0;
+  border-color: var(--line);
 }
 
 h1,
@@ -40,9 +47,9 @@ h4 {
 }
 
 .glass {
-  background: rgba(255, 255, 255, 0.66);
-  border: 1px solid rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.58);
+  border: 1px solid rgba(23, 24, 18, 0.12);
+  backdrop-filter: blur(12px);
 }
 
 .section-shell {
@@ -50,5 +57,11 @@ h4 {
 }
 
 .card-shadow {
-  box-shadow: 0 14px 35px -15px rgba(15, 23, 42, 0.25);
+  box-shadow: 0 18px 40px -24px rgba(23, 24, 18, 0.42);
+}
+
+.brand-grid {
+  background-image: linear-gradient(rgba(201, 217, 45, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(201, 217, 45, 0.08) 1px, transparent 1px);
+  background-size: 32px 32px;
 }

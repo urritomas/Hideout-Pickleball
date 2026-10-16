@@ -60,14 +60,14 @@ export default function DashboardLayout({
             )}
           </svg>
         </button>
-        <span className="font-display text-lg font-semibold text-slate-900">Admin Panel</span>
+        <span className="font-display text-lg font-semibold text-[#171812]">Hideout / Admin</span>
       </div>
 
       {sidebarOpen && (
         <div className="fixed inset-0 z-40 bg-slate-900/50 lg:hidden" onClick={() => setSidebarOpen(false)}>
           <div className="absolute left-0 top-0 h-full w-72 bg-white p-4 shadow-xl" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between">
-              <span className="font-display text-lg font-semibold text-slate-900">Admin Panel</span>
+              <span className="font-display text-lg font-semibold text-[#171812]">Hideout / Admin</span>
               <button
                 type="button"
                 onClick={() => setSidebarOpen(false)}
@@ -104,7 +104,7 @@ export default function DashboardLayout({
       )}
 
       <div className="grid gap-6 lg:grid-cols-[260px_1fr] py-6 sm:py-8 md:py-10">
-        <aside className="hidden lg:block h-fit rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
+          <aside className="hidden lg:block h-fit border border-[#171812]/15 bg-[#f8f6ef] p-4 shadow-sm">
           <p className="px-3 pb-2 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Admin</p>
           <nav className="space-y-1">
             {links.map((item) => (

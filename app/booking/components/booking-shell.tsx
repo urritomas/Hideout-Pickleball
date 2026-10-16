@@ -483,6 +483,7 @@ export function BookingShell() {
                 fill
                 sizes="(max-width: 1280px) 100vw, 30vw"
                 className="booking-logo object-contain object-center p-6 sm:p-8"
+                priority
               />
             </div>
             <div className="p-6">
